@@ -47,7 +47,7 @@ int main()
     while(q--)
     {
         int l,r;cin>>l>>r;
-        cout<<query2(--l,--r)<<'\n';
+        cout<<query(--l,--r)<<'\n';
     }
     return 0;
 }

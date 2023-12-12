@@ -1,3 +1,8 @@
+#include <iostream>
+#include <cassert>
+using namespace std;
+#include <vector>
+#include <climits>
 struct SegmentTree{
 private:
     vector<int>seg;int sz,skip=INT_MAX;
