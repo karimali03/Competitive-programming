@@ -44,7 +44,7 @@ bool isprime(int n){    // O( sqrt(n) )
 
 
 
-const int N=1e6+5;
+const int N=2e6+5;
 
 vector<int>prime(N,1);
 vector<int>primes;
@@ -57,6 +57,7 @@ vector<int>primes;
     for(int i=2;i<=N;i++) if(prime[i]) primes.push_back(i);   
 
      }       
+
 
 // spf ( smallest prime factor )
 vector<int>spf(N);   
@@ -86,12 +87,10 @@ vector<int>spf(N);
 
  map<int,int> fact(int n){  // O( sqrt(n) )
     map<int,int>res;
-    for(int i=2;i*i<=n;i++){
-        while (n%i==0)
-        {
-           res[i]++;
-           n/=i;
-        }
+    for(auto p : primes){
+        if(p*p > n) break;
+        while (n%p==0) res[p]++,n/=p;
+        
     }
     if(n!=1) res[n]++;
     return res;
