@@ -16,6 +16,22 @@ vector<int> divisiors(int n){ // O( sqrt(n) )
     return res;
 }
 
+
+// get divisors form factorization
+
+vector<pair<int,int>>v;  // {prime,count}
+vector<int>divisors;
+void get_divisors(int idx ,int val=1){  // O ( n^(1/3) )
+
+    if(idx == v.size()) divisors.push_back(val);
+
+    for(int i=0;i<=v[idx].second ;i++){
+        get_divisors(idx+1,val);
+        val*=v[idx].first;
+    }
+    
+}
+
 // check number is prime 
 bool isprime(int n){    // O( sqrt(n) )
     if(n<=1) return false;
@@ -118,11 +134,11 @@ int LCM(int a,int b){
 
 
 
- int fast_power(int a,int b){
+ int fast_power(int a,int b ,int m){
     int res=1;
     while(b){
-        if(b%2) res*=a;
-         a*=a;
+        if(b%2) (res*=a)%=m;
+         (a*=a)%=m;
          b/=2;
     }
 
