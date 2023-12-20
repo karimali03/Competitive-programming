@@ -98,16 +98,30 @@ vector<int>spf(N);
  }
 
 
- const int  mod = 1000000007;
+const int mod = 1000000007;
 
- int add(int a, int b) {
+int add(int a, int b) {
     return ((a % mod) + (b % mod)) % mod;
 }
- 
+
 int mul(int a, int b) {
     return ((a % mod) * (b % mod)) % mod;
 }
- 
+
+int fast_power(int a,int b){
+    int res=1;
+    while(b){
+        if(b&1) res = mul(a,res);
+        a =mul(a,a);
+        b/=2;
+    }
+
+    return res;
+}
+
+int divison(int a,int b){
+    return mul( a , fast_power(b,mod-2));
+}
 int sub(int a, int b) {
     return ((a % mod) - (b % mod) + mod) % mod;
 }
@@ -131,18 +145,6 @@ int LCM(int a,int b){
     return a / GCD(a,b) * b;
 }
 
-
-
- int fast_power(int a,int b ,int m){
-    int res=1;
-    while(b){
-        if(b%2) (res*=a)%=m;
-         (a*=a)%=m;
-         b/=2;
-    }
-
-   return res;
-}
 
 
 
