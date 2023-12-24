@@ -23,7 +23,10 @@ vector<pair<int,int>>v;  // {prime,count}
 vector<int>divisors;
 void get_divisors(int idx ,int val=1){  // O ( n^(1/3) )
 
-    if(idx == v.size()) divisors.push_back(val);
+    if(idx == v.size()) {
+        divisors.push_back(val);
+        return;
+    }
 
     for(int i=0;i<=v[idx].second ;i++){
         get_divisors(idx+1,val);
