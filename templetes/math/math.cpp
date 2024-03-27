@@ -122,6 +122,10 @@ int fast_power(int a,int b){
     return res;
 }
 
+int modinv(int x , int m){
+	return fast_power(x,m-2);
+}
+
 int divison(int a,int b){
     return mul( a , fast_power(b,mod-2));
 }
