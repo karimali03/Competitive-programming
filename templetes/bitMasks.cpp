@@ -75,7 +75,10 @@ int pairwiseSwap(int num){
 }
 
 
-
+int LSB(int i)  // least significant bit
+{
+    return i&(-i);
+}
 
 
 
