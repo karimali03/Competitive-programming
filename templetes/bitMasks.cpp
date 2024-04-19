@@ -21,6 +21,31 @@ int updateBit(int num,int i,bool val){
     return num || (val<<i);
 }
 
+// get the least significant bit
+int LSB(int x){
+    return x & (-x);
+}
+// get the most significant bit
+int MSB(int x){
+    ll msb = 0;
+    while (x){
+        x >>= 1;
+        msb++;
+    }
+    return msb - 1;
+}
+
+bool checkPowerOfTwo(int x){
+    return !(x & (x - 1));
+}
+
+
+
+
+
+
+
+
 int clearItoLSB(int num,int i){
     //  12345i678
    //   123450000
@@ -75,15 +100,7 @@ int pairwiseSwap(int num){
 }
 
 
-int LSB(int i)  // least significant bit
-{
-    return i&(-i);
-}
-
-
 
 int main(){
-
-
-
+    return 0;
 }
