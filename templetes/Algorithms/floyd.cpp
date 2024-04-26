@@ -30,7 +30,7 @@ vector<vector<int>> build_adj(){
     return v;
 }
 
-void flyod(vector<vector<int>> & v){
+void floyd(vector<vector<int>> & v){
     int n = v.size();
     for(int k = 0 ; k < n ; k++){
         for(int i = 0 ; i < n ;i++){
