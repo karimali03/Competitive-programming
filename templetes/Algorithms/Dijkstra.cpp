@@ -6,12 +6,12 @@
 #include <queue>
 using namespace std;
 
-const int OO = (int) 1e6;
+const int OO =  1e9;
 
 struct edge {
 	int to, w;
 
-	edge(int to, int w) :
+	edge(int to = 0, int w = 0) :
 			to(to), w(w) {
 	}
 
