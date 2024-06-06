@@ -5,16 +5,26 @@ using namespace std;
 #include <climits>
 #define int long long
 
+
+typedef int item;
+
 struct segment_tree
 {
     private:
         int size;
-        vector<int> seg;
-        int neutral = 1e10;
+        vector<item> seg;
  
-        int merge(int a , int b){
-            return min ( a , b );
+ 
+        item neutral = 0;
+ 
+        item merge(item a , item b){
+            return a  + b;
         }
+ 
+        item single(int v){
+            return v;
+        }
+
  
         void _set(int i,int v,int idx,int lx,int rx){
             if(rx - lx == 1){
@@ -22,23 +32,41 @@ struct segment_tree
                 return;
             }
             int m = (lx + rx) / 2;
-            if(i < m) _set(i,v,idx * 2 + 1 , lx , m );
+            if(i < m) _set(i , v , idx * 2 + 1 , lx , m );
             else  _set(i , v , idx * 2 + 2 , m  , rx);
             
             seg[idx] = merge( seg[2 * idx + 1] , seg[2 * idx + 2] );
- 
+            
         }
  
-        int _sum(int idx , int l, int r, int lx , int rx){
-            if(l >= rx || r <= lx) return neutral;
-            if(lx >= l  && rx <= r) return seg[idx];
-            int m = (lx+rx)/2;
-            int left = _sum(idx * 2 + 1 , l , r , lx , m);
-            int right = _sum(idx * 2 + 2 , l , r , m , rx);
  
-            return merge ( left , right ) ;
+        void _build(vector<int> & v , int idx , int lx , int rx){
+            if(rx - lx == 1) {
+                if(lx < (int)v.size()) seg[idx] = single(v[lx]);
+                else seg[idx] = neutral;
+                return;
+            }
+ 
+            int m = (lx + rx)/2;
+            _build(v , idx * 2 + 1 , lx , m);
+            _build(v , idx * 2 + 2 , m , rx);
+ 
+            seg[idx] = merge(seg[idx * 2 + 1],seg[idx * 2 + 2]);
+ 
+        }
+
+        int _query(int l , int r , int idx , int lx , int rx){
+         //   print("seg",l,r,lx,rx);
+            if(lx >= r || l >= rx) return neutral;
+            if(lx >= l && rx <= r) return seg[idx];
+          //  print(l,r,idx,lx,rx,seg[idx]);
+            int m = (lx + rx) / 2;
+            int left = _query(l , r , 2 * idx + 1 , lx , m);
+            int right = _query(l , r , 2 * idx + 2 , m , rx);
+            return merge(left ,right);
         }
  
+    
     public:
           segment_tree(int n){
             size = 1;
@@ -46,40 +74,26 @@ struct segment_tree
             {
                 size<<=1;
             }
-             seg = vector<int>( size<<1 ,neutral);
+             seg = vector<item>( size<<1 );
+        }
+ 
+        void build(vector<int> & v){
+            _build(v,0,0,size);
         }
  
         void set(int i , int v){
             assert(i >=0 && i < size);
             _set(i,v,0,0,size);
         }
-        int sum(int l , int r){
-            assert(l >=0 && l <= size && r >= 0 && r <= size);
-            return _sum(0 , l , r , 0 , size);
+
+        int query(int l , int r){
+            return _query(l,r,0,0,size);
         }
  
+     
 };
 
-
 signed main(){
-    int n,m; cin>>n>>m;
-    segment_tree seg(n);
-    for(int i = 0 ; i < n ;i++){
-        int x; cin>>x;
-        seg.set(i,x);
-    }    
-    while (m--)
-    {
-        int c; cin>>c;
-        if(c == 1){
-            int i,v; cin>>i>>v;
-            seg.set(i,v);
-        }
-        else{
-            int l,r; cin>>l>>r;
-            cout<<seg.sum(l,r)<<"\n";
-        }
-    }
     
     return 0;
 }
