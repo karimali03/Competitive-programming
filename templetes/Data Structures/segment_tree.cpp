@@ -56,10 +56,10 @@ struct segment_tree
         }
 
         int _query(int l , int r , int idx , int lx , int rx){
-         //   print("seg",l,r,lx,rx);
+            
             if(lx >= r || l >= rx) return neutral;
             if(lx >= l && rx <= r) return seg[idx];
-          //  print(l,r,idx,lx,rx,seg[idx]);
+          
             int m = (lx + rx) / 2;
             int left = _query(l , r , 2 * idx + 1 , lx , m);
             int right = _query(l , r , 2 * idx + 2 , m , rx);
