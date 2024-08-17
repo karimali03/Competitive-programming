@@ -1,2 +1,6 @@
 # Competitive-programming
-my templates for CP
+# My templates for CP
+- Templates
+   - Algorithms
+   - Data Structure
+   - Math
