@@ -96,7 +96,29 @@ signed main() {
 
 
 
-
+int dp[5001][5001];
+string a,b;
+int rec(int i,int j){
+    if(i == a.size()) return b.size()-j;
+    if(j == b.size()) return a.size()-i;
+    int &ret = dp[i][j];
+    assert(ret!=-1);
+    return ret;
+}
 void solve(int test_case) {
-    
+    cin>>a>>b;
+    memset(dp,-1,sizeof(dp));
+    for(int i = a.size()-1 ; i >= 0 ; i--){
+        for(int j = b.size()-1 ; j >= 0 ; j--){
+            int &ret = dp[i][j];
+            if(a[i] == b[j]) ret = rec(i+1,j+1);
+            else {
+                int ch1 = 1 + rec(i+1,j);
+                int ch2 = 1 + rec(i+1,j+1);
+                int ch3 = 1 + rec(i,j+1);
+                ret = min({ch1,ch2,ch3});
+            }
+        }
+    }
+    cout<<rec(0,0)<<"\n";
 }
