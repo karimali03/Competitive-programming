@@ -44,25 +44,6 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-// // Overload for set
-// template<typename T = int>
-// ostream &operator<<(ostream &out, const set<T> &s) {
-    // for (const T &x : s) out << x << ' ';
-    // return out;
-// }
-// 
-// // Overload for map
-// template<typename K = int, typename V = int>
-// ostream &operator<<(ostream &out, const map<K, V> &m) { 
-    // for (const auto &[key, value] : m) out << '(' << key << ": " << value << ") ";
-    // return out;
-// }
-// 
-// // Overload for pair
-// template<typename A = int, typename B = int>
-// ostream &operator<<(ostream &out, const pair<A, B> &p) {
-    // return out << p.first << ", " << p.second;
-// }
 
 
 
@@ -70,6 +51,10 @@ void kemo() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
+    #ifndef ONLINE_JUDGE
+    freopen("in.txt", "r", stdin);
+    freopen("out.txt", "w", stdout);
+    #endif
 }
 
 
@@ -81,7 +66,7 @@ signed main() {
  
     int t = 1;
    // cin >> t;
-   
+
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
@@ -90,58 +75,21 @@ signed main() {
 }
 
 
-const int mod = 998244353;
 
-int add(int a, int b) {
-    return ((a % mod) + (b % mod)) % mod;
-}
-
-int mul(int a, int b) {
-    return ((a % mod) * (b % mod)) % mod;
-}
-
-int fast_power(int a,int b){
-    int res=1;
-    while(b){
-        if(b&1) res = mul(a,res);
-        a =mul(a,a);
-        b/=2;
-    }
-
-    return res;
-}
 
 void solve(int test_case){
 	int n; cin>>n;
-	vi v(n); cin>>v;
-	vi vis(n);
-	vi mp(100005);
-	for(int i = 0 ; i < n ; i++){
-		if(vis[i]) continue;
-		vii row;
-		for(int j = 1 ; i*j < n ; j++){
-			row.push_back({v[i*j],i*j});
-		}
-		int mx = 0; int c = 0;
-		for(int k = row.size()-1 ; k >= 0 ; k--){
-			if(row[k][0] > mx){
-				mp[mx]+=c;	
-				c = 0; mx = 0;
-			}
-			mx = max(mx,row[k][0]); 
-			if(!vis[row[k][1]]) c++;
-		}
-		mp[mx]+=c;	
-		for(int j = 1 ; i*j < n ; j++){
-			vis[i*j] = 1;
-		}
-	}
-	
-	int ans = 0;
-	int cnt = n;
-	for(int i = 100005 ; i >= 0 ; i--){
-		cnt-=mp[i];
-	}	
-	cout<<cnt<<ln;
-	
+    vi v(n); cin>>v;
+    int mx = *max_element(all(v));
+    if(mx <= 0) return void(cout<<mx<<ln);
+    int sum = 0;
+    int cur = 0;
+    for(int i = 0 ; i < n ; i++){
+        if(cur + v[i] > 0){
+            cur+=v[i];
+        }
+        else cur = 0;
+        sum = max(sum,cur);
+    }
+    cout<<sum<<ln;
 }
