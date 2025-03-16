@@ -88,18 +88,19 @@ vector<int>spf(N);
  }
  
 
- map<int,int> fact(int n){  // O( sqrt(n) )
-    map<int,int>res;
-    for(auto p : primes){
-        if(p*p > n) break;
-        while (n%p==0) res[p]++,n/=p;
-        
+map<int, int> fact(int n) {  // O(sqrt(n))
+    map<int, int> res;
+    
+    for (int p = 2; p * p <= n; p++) {
+        while (n % p == 0) {
+            res[p]++;
+            n /= p;
+        }
     }
-    if(n!=1) res[n]++;
+    if (n > 1) res[n]++; 
+    
     return res;
-
- }
-
+}
 
 int GCD(int a,int b){
     int mx=max(a,b);
