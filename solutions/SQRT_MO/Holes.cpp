@@ -21,7 +21,6 @@ using namespace std;
 //using namespace __gnu_pbds;
 //#define ordered_set tree<ll, null_type,less<ll>, rb_tree_tag,tree_order_statistics_node_update>
 
-
 // Variadic print function for debugging
 template<typename... Args>
 void print(Args... args) {
@@ -46,11 +45,8 @@ void solve(int test_case);
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
-    #ifndef ONLINE_JUDGE 
-    freopen("in.txt", "r", stdin); freopen("out.txt", "w", stdout); 
-    #endif
     int t = 1;
-    cin >> t;
+  
    
     for (int i = 1; i <= t; i++) {
         solve(i);
@@ -60,5 +56,34 @@ signed main() {
 }
 
 void solve(int test_case){
-    
+    int n,m; cin>>n>>m;
+    vi v(n);
+    v.reserve(n);
+    vii dp(n, vi(2));
+
+    vii dp(n,vi(2));
+    int SQ = sqrt(n) + 1;
+    for(int i = n-1;  i >= 0 ; i--){
+        if(i+v[i] >= (i/SQ+1)*SQ || i+v[i] >= n ) dp[i] = {1,i};
+        else dp[i] = {dp[i+v[i]][0]+1,dp[i+v[i]][1]};
+    }
+    while(m--){
+        int x; cin>>x;
+        if(x == 0){
+            int a,b; cin>>a>>b; a--; v[a] = b;
+            for(int i = a;  i >= (a/SQ)*SQ ; i--){
+                if(i+v[i] >= (i/SQ+1)*SQ || i+v[i] >= n ) dp[i] = {1,i};
+                else dp[i] = {dp[i+v[i]][0]+1,dp[i+v[i]][1]};
+            }
+        }else{
+            int a; cin>>a; a--;
+            int idx = a; int cnt = 0;
+            while(idx < n){
+                cnt += dp[idx][0];
+                a = dp[idx][1] + 1;
+                idx = dp[idx][1] + v[dp[idx][1]]; 
+            }
+            cout<<a<<" "<<cnt<<ln;
+        }
+    }   
 }

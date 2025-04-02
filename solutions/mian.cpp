@@ -21,7 +21,6 @@ using namespace std;
 //using namespace __gnu_pbds;
 //#define ordered_set tree<ll, null_type,less<ll>, rb_tree_tag,tree_order_statistics_node_update>
 
-
 // Variadic print function for debugging
 template<typename... Args>
 void print(Args... args) {
@@ -46,11 +45,8 @@ void solve(int test_case);
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
-    #ifndef ONLINE_JUDGE 
-    freopen("in.txt", "r", stdin); freopen("out.txt", "w", stdout); 
-    #endif
     int t = 1;
-    cin >> t;
+ 
    
     for (int i = 1; i <= t; i++) {
         solve(i);
@@ -59,6 +55,56 @@ signed main() {
     return 0;
 }
 
+
+int SQ,sum;
+int frq[1'000'001]{};
+struct Query
+{
+    int l, r, idx;
+    bool operator < (const Query &other) const
+    {
+        if (l/SQ != other.l/SQ) return l/SQ < other.l/SQ;
+        return (l/SQ) & 1 ? r > other.r : r < other.r;
+    }
+};
+ 
+void add(ll val) {
+    sum -= val * (frq[val]*frq[val]);
+    frq[val]++;
+    sum += val * (frq[val]*frq[val]);
+}
+
+void del(ll val) {
+    sum -= val * (frq[val]*frq[val]);
+    frq[val]--;   
+    sum += val * (frq[val]*frq[val]);
+}
+
+vi MO(vector<Query> &q, vi &v){
+    int n = v.size();
+    SQ = sqrt(n) + 1;
+    sum = 0;
+    vi res(q.size());
+    sort(q.begin(), q.end());
+    int l = 0 ,r = -1;
+    for(auto [lq,rq,idx] : q){
+        while(lq < l) add(v[--l]);
+        while(rq > r) add(v[++r]);
+        while(lq > l) del(v[l++]);
+        while(rq < r) del(v[r--]);
+        res[idx] = sum;
+    }
+    return res;
+}
 void solve(int test_case){
-    
+    int n; cin>>n;
+    int q; cin>>q;
+    vi v(n); cin>>v;
+    vector<Query> queries(q);
+    for(int i = 0 ; i < q ; i++){
+        int l,r; cin>>l>>r; l--,r--;
+        queries[i] = {l,r,i};
+    }
+    vi ans = MO(queries,v);
+    for(auto x : ans) cout << x << ln;
 }

@@ -21,7 +21,6 @@ using namespace std;
 //using namespace __gnu_pbds;
 //#define ordered_set tree<ll, null_type,less<ll>, rb_tree_tag,tree_order_statistics_node_update>
 
-
 // Variadic print function for debugging
 template<typename... Args>
 void print(Args... args) {
@@ -46,11 +45,8 @@ void solve(int test_case);
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
-    #ifndef ONLINE_JUDGE 
-    freopen("in.txt", "r", stdin); freopen("out.txt", "w", stdout); 
-    #endif
     int t = 1;
-    cin >> t;
+ 
    
     for (int i = 1; i <= t; i++) {
         solve(i);
@@ -59,6 +55,36 @@ signed main() {
     return 0;
 }
 
+
+// https://cses.fi/problemset/task/1648 
 void solve(int test_case){
-    
+    int n,q; cin>>n>>q;
+    vi v(n); cin>>v;
+    int SQ = sqrt(n) + 1;
+    int blocks[SQ]{};
+    for(int i = 0 ; i < n ; i++){
+        blocks[i/SQ] += v[i];
+    }
+    while(q--){
+        int op,a,b; cin>>op>>a>>b;
+        if(op == 1){
+            a--; 
+            blocks[a/SQ]-= v[a];
+            v[a] = b;
+            blocks[a/SQ] += v[a];
+        }
+        else{
+            int sum = 0; a--,b--;
+            for(int i = (a/SQ)+1 ; i < (b/SQ) ; i++){
+                sum += blocks[i];
+            }
+            for(int i = a ; i < (a/SQ + 1) * SQ && i <= b ; i++){
+                sum += v[i];
+            }
+            for(int i = (b/SQ) * SQ ; i > a && i <= b ; i++){
+                sum += v[i];
+            }
+            cout << sum << ln;
+        }
+    }   
 }

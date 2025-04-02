@@ -21,7 +21,6 @@ using namespace std;
 //using namespace __gnu_pbds;
 //#define ordered_set tree<ll, null_type,less<ll>, rb_tree_tag,tree_order_statistics_node_update>
 
-
 // Variadic print function for debugging
 template<typename... Args>
 void print(Args... args) {
@@ -46,11 +45,8 @@ void solve(int test_case);
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
-    #ifndef ONLINE_JUDGE 
-    freopen("in.txt", "r", stdin); freopen("out.txt", "w", stdout); 
-    #endif
     int t = 1;
-    cin >> t;
+  
    
     for (int i = 1; i <= t; i++) {
         solve(i);
@@ -59,6 +55,45 @@ signed main() {
     return 0;
 }
 
+
+const int SQ = 460;
+unordered_map<int, int> blocks[SQ];
+void update(int i,int v , vi &a){
+    blocks[i/SQ][a[i]]--;
+    if(blocks[i/SQ][a[i]] == 0) blocks[i/SQ].erase(a[i]);
+    a[i] = v;
+    blocks[i/SQ][a[i]]++;
+}
+int query(int r, int x, vi &a){
+    int ans= 0 ;
+    for(int i = 0 ; i < r/SQ ; i++) {
+        ans += blocks[i][x];
+    }
+    for(int i = (r/SQ)*SQ ; i < r ; i++){
+        if(a[i] == x) ans++;
+    }
+    return ans;
+}
+int qu(int l,int r ,int x, vi &a){
+    return query(r, x,a) - query(l-1, x,a);
+}
+
+// https://judge.yosupo.jp/problem/point_set_range_frequency
 void solve(int test_case){
-    
+    int n, q; cin >> n >> q;
+    vector<int> v(n); 
+    for(int i = 0 ; i < n ; i++){
+        cin >> v[i];
+        blocks[i/SQ][v[i]]++;
+    }
+    while (q--) {
+        int op; cin>>op;
+        if (op == 0) {
+            int a,b; cin>>a>>b;
+            update(a, b,v);           
+        } else {
+            int a, b, x; cin >> a >> b >> x;
+            cout << qu(a, b, x , v) << ln;
+        }
+    }
 }
