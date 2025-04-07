@@ -46,8 +46,7 @@ void solve(int test_case);
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
     int t = 1;
- 
-   
+
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
@@ -56,55 +55,57 @@ signed main() {
 }
 
 
-int SQ,sum;
-int frq[1'000'001]{};
-struct Query
-{
-    int l, r, idx;
-    bool operator < (const Query &other) const
-    {
-        if (l/SQ != other.l/SQ) return l/SQ < other.l/SQ;
-        return (l/SQ) & 1 ? r > other.r : r < other.r;
-    }
-};
- 
-void add(ll val) {
-    sum -= val * (frq[val]*frq[val]);
-    frq[val]++;
-    sum += val * (frq[val]*frq[val]);
+vector<int> topsort(vii &adjList , vi &d , vi&c) {	// O( E+V )
+	int sz = adjList.size();
+	vector<int> indegree(sz, 0);	// compute indegrees of nodes
+	for (int i = 0; i < sz; ++i)
+		for (int j : adjList[i])
+			indegree[j]++;
+    int time = 0 ;
+	priority_queue< vi , vii , greater<> > ready;	// add all current nodes that has indegree(0)
+	for (int i = 0; i < sz; ++i)
+		if (!indegree[i])
+			ready.push({d[i] ,i});
+    
+	vector<int> ordering;
+	while (!ready.empty()) {	// keep picking a ready node
+		auto i = ready.top();
+		ready.pop();
+     //   cout<<i.second<<" "<<i.first<<" "<<time<<"\n";
+        if( time + c[i[1]] > i[0] ) return {};
+        time += c[i[1]];
+		ordering.push_back(i[1]);
+
+		for (int j : adjList[i[1]])	// remove its outgoing edges
+			if (--indegree[j] == 0)	// If a neighbor is ready, add it
+				ready.push({ d[j] ,j});
+	}
+	if (ordering.size() != adjList.size())
+		ordering.clear();				//There are cycles
+	return ordering;
 }
 
-void del(ll val) {
-    sum -= val * (frq[val]*frq[val]);
-    frq[val]--;   
-    sum += val * (frq[val]*frq[val]);
-}
 
-vi MO(vector<Query> &q, vi &v){
-    int n = v.size();
-    SQ = sqrt(n) + 1;
-    sum = 0;
-    vi res(q.size());
-    sort(q.begin(), q.end());
-    int l = 0 ,r = -1;
-    for(auto [lq,rq,idx] : q){
-        while(lq < l) add(v[--l]);
-        while(rq > r) add(v[++r]);
-        while(lq > l) del(v[l++]);
-        while(rq < r) del(v[r--]);
-        res[idx] = sum;
-    }
-    return res;
-}
 void solve(int test_case){
     int n; cin>>n;
-    int q; cin>>q;
-    vi v(n); cin>>v;
-    vector<Query> queries(q);
-    for(int i = 0 ; i < q ; i++){
-        int l,r; cin>>l>>r; l--,r--;
-        queries[i] = {l,r,i};
+    vii adj(n);
+    vi d(n),c(n);
+    vi mn(n , INT64_MAX );
+    for(int i = 0 ; i < n ; i++){
+        cin>>d[i]>>c[i];
+        int r; cin>>r;
+        for(int x = 0 ; x < r ; x++){
+            int a; cin>>a; a--;
+            adj[a].push_back(i);
+        }
     }
-    vi ans = MO(queries,v);
-    for(auto x : ans) cout << x << ln;
+ 
+
+    auto res = topsort(adj,d,c);
+    if(res.empty()) cout<<"NO"<<ln;
+    else {
+        cout<<"YES"<<ln;
+        for(auto it : res) cout<<it+1<<" ";
+        cout<<ln;
+    }
 }

@@ -9,3 +9,12 @@ long long compute_hash(string const& s) {
     }
     return hash_value;
 }
+
+// custom hash
+struct HASH{
+    size_t operator()(const pair<int,int>&x)const{
+        return ((long long)x.first) ^ ((long long)x.second << 32);
+    }
+};
+unordered_set<pair<int,int>, HASH> st;
+
