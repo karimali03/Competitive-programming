@@ -1,8 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-#include <iostream>
-
-
 struct SegmentTree {
     struct node {
         int val;
@@ -62,10 +57,3 @@ struct SegmentTree {
 };
 
 
-
-
-
-int main() {
-    
-    return 0;
-}

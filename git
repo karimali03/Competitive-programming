@@ -1,0 +1,10 @@
+#!/bin/bash
+
+COMMIT_MSG=${1:-"🔧 Update changes"}
+
+if git pull && git add . && git commit -m "$COMMIT_MSG" && git push; then
+    echo -e "\033[0;32mOK\033[0m"   # Green
+else
+    echo -e "\033[0;31mFAIL\033[0m" # Red
+fi
+
