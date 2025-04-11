@@ -1,10 +1,3 @@
-#include <iostream>
-#include <cassert>
-using namespace std;
-#include <vector>
-#include <climits>
-#define ll long long
-
 const int N=1e5+5;
 struct FenwickTree{
     ll bit[N]={};

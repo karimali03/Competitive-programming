@@ -1,7 +1,3 @@
-#include <iostream>
-#include <bits/stdc++.h>
-using namespace std;
-
 int SQ,sum;
 int frq[1'000'001]{};
 struct Query
@@ -44,6 +40,27 @@ vector<int> MO(vector<Query> &q, vector<int> &v){
 }
 
 
-int main(){
-    return 0;
-}
+/*
+Use Case:
+Efficiently answers multiple range queries of the form [L, R], where:
+The queries are offline (non-persistent)
+
+Core Idea:
+Process queries in a specific order to minimize the movement of the two pointers (left and right).
+Maintain a data structure that can update the answer incrementally when:
+L is incremented or decremented
+R is incremented or decremented
+
+Optimization Strategy:
+
+Sort the queries by block number of L (L / block_size), and then by R within each block.
+
+Block size is usually √n.
+
+Time Complexity:
+
+O((n + q) * √n) — where n is the size of the array and q is the number of queries.
+
+Important Note:
+This works only when the modification cost is small and incremental.
+*/
