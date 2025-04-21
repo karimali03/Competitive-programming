@@ -1,7 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define ll long long 
-
 void upper(string &s){
     transform(s.begin(), s.end(), s.begin(), ::toupper);
 }
@@ -19,9 +15,14 @@ ll sum_all(ll n,ll c=1){
     return ((n/c)*((n/c)+1)*c)/2;
 }
 
+// setfill('0') sets the fill character to '0'.
+// setw(3) sets the width to 3 for the next output.
+//  setfill('0') << setw(3) <<
 
-int main(){
-	
-	return 0;
-	
-	}
+
+// intersect two segments
+bool intersect(pair<int,int> a, pair<int,int> b) {
+    if (a.first > b.first) swap(a, b);
+    return a.s >= b.f;
+}
+
