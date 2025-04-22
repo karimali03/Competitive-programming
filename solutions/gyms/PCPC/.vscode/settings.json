@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "complex": "cpp",
+        "istream": "cpp",
+        "tuple": "cpp",
+        "variant": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "memory": "cpp",
+        "random": "cpp",
+        "future": "cpp",
+        "optional": "cpp",
+        "deque": "cpp"
+    }
+}
