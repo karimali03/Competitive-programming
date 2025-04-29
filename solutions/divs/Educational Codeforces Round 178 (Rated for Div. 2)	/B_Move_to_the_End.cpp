@@ -36,42 +36,27 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int rec(vii & v , vi &cost , int n){
-    vii dp(n,vi(2,1e18));
-    dp[0][0] = 0; dp[0][1] = cost[0];
-    for(int i = 1 ; i < n ; i++){
-        for(int x = 0 ; x < 2 ; x++){
-            for(int y = 0 ;  y < 2 ; y++){
-                bool valid = true;
-                for(int j = 0 ;j < n ; j++) valid&=(v[i-1][j]+y != v[i][j]+x);
-                if(valid){
-                    dp[i][x] = min(dp[i][x] , dp[i-1][y] + (x?cost[i]:0) );
-                }
-            }
-        }
-    }
-    return min(dp[n-1][0],dp[n-1][1]);
-}
-
-
-void trans(vii & v ,int n){
-    for(int i  = 0 ; i <  n; i++){
-        for(int j = i+1 ; j <  n;  j++){
-            swap(v[i][j],v[j][i]);
-        }
-    }
-}
-
 void solve(int test_case){
     int n; cin>>n;
-    vii v(n,vi(n));
-    f(i,0,n) cin>>v[i];
-    vi a(n),b(n); cin>>a>>b;
-    int c1 = rec(v,a,n);
-    trans(v,n);
-    int c2 = rec(v,b,n);
-    if(c1 == 1e18 || c2 == 1e18) cout<<-1<<ln;
-    else cout<<c1+c2<<ln;
+    vi v(n); cin>>v;
+    vi suf(n);
+    vi mx(n);
+    for(int i = n-1 ; i >= 0 ; i--){
+        suf[i] = v[i];
+        if(i!=n-1) suf[i]+=suf[i+1];
+    }   
+    for(int i = 0 ;i  < n ; i++){
+        mx[i] = v[i];
+        if(i) mx[i] = max(mx[i],mx[i-1]);
+    }
+    for(int i = n-1 ; i >= 0 ; i--){
+        if(i != 0 && mx[i-1] > v[i]){
+            cout<<suf[i]-v[i]+mx[i-1]<<" ";
+        }
+        else cout<<suf[i]<<" ";
+    }
+    cout<<ln;
+
 }
 
 signed main() {

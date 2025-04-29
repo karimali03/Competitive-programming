@@ -36,48 +36,55 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int rec(vii & v , vi &cost , int n){
-    vii dp(n,vi(2,1e18));
-    dp[0][0] = 0; dp[0][1] = cost[0];
-    for(int i = 1 ; i < n ; i++){
-        for(int x = 0 ; x < 2 ; x++){
-            for(int y = 0 ;  y < 2 ; y++){
-                bool valid = true;
-                for(int j = 0 ;j < n ; j++) valid&=(v[i-1][j]+y != v[i][j]+x);
-                if(valid){
-                    dp[i][x] = min(dp[i][x] , dp[i-1][y] + (x?cost[i]:0) );
-                }
-            }
+int dp[1000005];
+int n,k;
+vii idx(26);
+int rec(int i){
+    if(i >= n) return 0;
+    int &ret = dp[i];
+    if(~ret) return ret;
+    ret = n;
+    for(int c = 0 ; c <  k ; c++){
+        if(idx[c].empty() || idx[c].back() <= i){
+            ret = min(ret , 1ll);
+            continue;
         }
+        int nxt = idx[c][upper_bound(all(idx[c]),i)-idx[c].begin()];
+        ret = min(ret , 1 + rec(nxt));
     }
-    return min(dp[n-1][0],dp[n-1][1]);
-}
-
-
-void trans(vii & v ,int n){
-    for(int i  = 0 ; i <  n; i++){
-        for(int j = i+1 ; j <  n;  j++){
-            swap(v[i][j],v[j][i]);
-        }
-    }
+    return ret;
 }
 
 void solve(int test_case){
-    int n; cin>>n;
-    vii v(n,vi(n));
-    f(i,0,n) cin>>v[i];
-    vi a(n),b(n); cin>>a>>b;
-    int c1 = rec(v,a,n);
-    trans(v,n);
-    int c2 = rec(v,b,n);
-    if(c1 == 1e18 || c2 == 1e18) cout<<-1<<ln;
-    else cout<<c1+c2<<ln;
+    cin>>n>>k;
+    memset(dp,-1,sizeof(dp));
+    string s; cin>>s;
+    f(i,0,n){
+        idx[s[i]-'a'].push_back(i);
+    }
+    int q; cin>>q;
+    while(q--){
+        string x; cin>>x;
+        int i = -1;
+        int res=  -1;
+        for(int j = 0 ; j  < x.size() && res == -1 ; j++){
+            if(idx[x[j]-'a'].empty() || idx[x[j]-'a'].back() <= i){
+                res = 0;
+            }
+            else{
+             i = idx[x[j]-'a'][upper_bound(all(idx[x[j]-'a']),i)-idx[x[j]-'a'].begin()];
+            }
+        }
+
+        if(res == 0) cout<<0<<ln;
+        else cout<<rec(i)<<ln;
+    }
 }
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
     int t = 1;
-    cin >> t;
+   // cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

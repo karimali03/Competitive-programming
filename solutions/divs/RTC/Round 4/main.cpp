@@ -36,42 +36,13 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int rec(vii & v , vi &cost , int n){
-    vii dp(n,vi(2,1e18));
-    dp[0][0] = 0; dp[0][1] = cost[0];
-    for(int i = 1 ; i < n ; i++){
-        for(int x = 0 ; x < 2 ; x++){
-            for(int y = 0 ;  y < 2 ; y++){
-                bool valid = true;
-                for(int j = 0 ;j < n ; j++) valid&=(v[i-1][j]+y != v[i][j]+x);
-                if(valid){
-                    dp[i][x] = min(dp[i][x] , dp[i-1][y] + (x?cost[i]:0) );
-                }
-            }
-        }
-    }
-    return min(dp[n-1][0],dp[n-1][1]);
-}
-
-
-void trans(vii & v ,int n){
-    for(int i  = 0 ; i <  n; i++){
-        for(int j = i+1 ; j <  n;  j++){
-            swap(v[i][j],v[j][i]);
-        }
-    }
-}
-
 void solve(int test_case){
-    int n; cin>>n;
-    vii v(n,vi(n));
-    f(i,0,n) cin>>v[i];
-    vi a(n),b(n); cin>>a>>b;
-    int c1 = rec(v,a,n);
-    trans(v,n);
-    int c2 = rec(v,b,n);
-    if(c1 == 1e18 || c2 == 1e18) cout<<-1<<ln;
-    else cout<<c1+c2<<ln;
+    int x1,y1,x2,y2,area;
+    cin>>x1>>y1>>x2>>y2>>area;
+    double r = sqrtl(area);
+    double dis = sqrtl ( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
+    double res = (r-dis)*(r-dis)/2.0;
+    cout<<fixed<<setprecision(6)<<res<<ln;
 }
 
 signed main() {

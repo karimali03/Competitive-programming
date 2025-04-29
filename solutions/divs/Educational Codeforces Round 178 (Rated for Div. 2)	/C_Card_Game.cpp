@@ -36,42 +36,31 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int rec(vii & v , vi &cost , int n){
-    vii dp(n,vi(2,1e18));
-    dp[0][0] = 0; dp[0][1] = cost[0];
-    for(int i = 1 ; i < n ; i++){
-        for(int x = 0 ; x < 2 ; x++){
-            for(int y = 0 ;  y < 2 ; y++){
-                bool valid = true;
-                for(int j = 0 ;j < n ; j++) valid&=(v[i-1][j]+y != v[i][j]+x);
-                if(valid){
-                    dp[i][x] = min(dp[i][x] , dp[i-1][y] + (x?cost[i]:0) );
-                }
-            }
-        }
-    }
-    return min(dp[n-1][0],dp[n-1][1]);
-}
-
-
-void trans(vii & v ,int n){
-    for(int i  = 0 ; i <  n; i++){
-        for(int j = i+1 ; j <  n;  j++){
-            swap(v[i][j],v[j][i]);
-        }
-    }
-}
+#define bob cout<<"Bob"<<ln
+#define alice cout<<"Alice"<<ln
 
 void solve(int test_case){
     int n; cin>>n;
-    vii v(n,vi(n));
-    f(i,0,n) cin>>v[i];
-    vi a(n),b(n); cin>>a>>b;
-    int c1 = rec(v,a,n);
-    trans(v,n);
-    int c2 = rec(v,b,n);
-    if(c1 == 1e18 || c2 == 1e18) cout<<-1<<ln;
-    else cout<<c1+c2<<ln;
+    set<int>a,b;
+    string s; cin>>s;
+    for(int i = 0 ; i < n ; i++){
+        if(s[i] == 'A') a.insert(i+1);
+        else b.insert(i+1);
+    }   
+    if(n == 2){
+        if(a.count(1)) alice;
+        else bob;
+        return;
+    }
+    if(a.size() == 1 && a.count(1)) bob;
+    else if(a.size() == 1 && a.count(n)) bob;
+    else if(b.size() == 1 && b.count(1)) alice;
+    else if(b.size() == 1 && b.count(n)) alice;
+    else if(a.count(1) && a.count(n)) alice;
+    else if(b.count(1) && b.count(n)) bob;
+    else if(b.count(n) && *b.begin()>= 1 && *b.begin() < n) bob;
+    else if(a.count(n) && a.count(n-1)) alice;
+    else bob;
 }
 
 signed main() {

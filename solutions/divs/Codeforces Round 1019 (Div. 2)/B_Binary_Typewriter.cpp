@@ -36,42 +36,30 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int rec(vii & v , vi &cost , int n){
-    vii dp(n,vi(2,1e18));
-    dp[0][0] = 0; dp[0][1] = cost[0];
-    for(int i = 1 ; i < n ; i++){
-        for(int x = 0 ; x < 2 ; x++){
-            for(int y = 0 ;  y < 2 ; y++){
-                bool valid = true;
-                for(int j = 0 ;j < n ; j++) valid&=(v[i-1][j]+y != v[i][j]+x);
-                if(valid){
-                    dp[i][x] = min(dp[i][x] , dp[i-1][y] + (x?cost[i]:0) );
-                }
-            }
-        }
-    }
-    return min(dp[n-1][0],dp[n-1][1]);
-}
-
-
-void trans(vii & v ,int n){
-    for(int i  = 0 ; i <  n; i++){
-        for(int j = i+1 ; j <  n;  j++){
-            swap(v[i][j],v[j][i]);
-        }
-    }
-}
-
 void solve(int test_case){
     int n; cin>>n;
-    vii v(n,vi(n));
-    f(i,0,n) cin>>v[i];
-    vi a(n),b(n); cin>>a>>b;
-    int c1 = rec(v,a,n);
-    trans(v,n);
-    int c2 = rec(v,b,n);
-    if(c1 == 1e18 || c2 == 1e18) cout<<-1<<ln;
-    else cout<<c1+c2<<ln;
+    string a; cin>>a;
+    string s(n+1,'0');
+    f(i,1,n+1) s[i] = a[i-1];
+    int l = 0 , r = 0;
+    s.push_back('1');
+    for(int i = 1  ; i <= n ; i++){
+        if( !l && s[i] == '1' && s[i-1] == '0'){
+            l = i;
+        }
+        else if(l && !r && s[i] == '0' && s[i+1] == '1'){
+            r = i;
+        }
+    }
+    if(l && r) reverse(s.begin()+l,s.begin()+r+1);
+    int c = 0;
+    int res = 0;
+ //   cout<<s<<ln;
+    for(int i = 1 ; i <= n  ; i++){
+        res++;
+        if(s[i]-'0' != c) res++,c=1-c;
+    }
+    cout<<res<<ln;
 }
 
 signed main() {
