@@ -1,0 +1,68 @@
+#include <iostream>
+#include <bits/stdc++.h>
+
+using namespace std;
+#define ln "\n"
+#define ll long long
+#define ld long double
+#define vec vector
+#define vi vector<int>
+#define vii vector<vector<int>>
+#define f(i, a, b) for(int i=a;i<b;i++)
+#define fr(n) for(int i=0;i<n;i++)
+#define all(x)   x.begin(),x.end()
+#define rall(x)   x.rbegin(),x.rend()
+#define pi acos(-1)
+#define cout_2d(vec, n, m) for(int i = 0; i < n; i++, cout << "\n") for(int j = 0; j < m && cout << vec[i][j] << " "; j++);
+#define int long long
+
+// Variadic print function for debugging
+template<typename... Args>
+void print(Args... args) {
+    ((cout << args << " "), ...);
+    cout << endl;
+}
+
+template<typename T = int>
+istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x: v) in >> x;
+    return in;
+}
+
+// Overload for vector
+template<typename T = int>
+ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (const T &x : v) out << x << ' ';
+    return out;
+}
+
+void solve(int test_case){
+    int n,x; cin>>n>>x;
+    int cnt = 0;
+    for(int i = 0 ; i < 32 ; i++){
+        if((x>>i)&1) cnt++;
+    }
+  //  cout<<"cnt "<<cnt<<ln;
+    if(cnt >= n) return void(cout<<x<<ln);
+    cnt = n - cnt;
+    if(cnt%2==0) return void(cout<<x+cnt<<ln);
+    if(n == 1) return void(cout<<-1<<ln);
+    for(int i = 0 ; x > 0 &&  i  < 32 ; i++){
+        if( (!((x>>i)&1)) || (n-cnt > 1) ) return void(cout<<(1<<i)*2+x+cnt-1<<ln);
+    }
+    if(cnt >= 3){
+        cout<<3+2+1+cnt-3<<ln;
+    }
+    else cout<<-1<<ln;
+
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);cin.tie(nullptr); cout.tie(nullptr);
+    int t = 1;
+    cin >> t;
+    for (int i = 1; i <= t; i++) {
+        solve(i);
+    }
+    return 0;
+}

@@ -16,7 +16,7 @@ long long mod_pow(long long base, long long exp, long long mod) {
 }
 
 // Precompute powers and inverses
-void precompute_hashing() {
+void INIT() {
     p_pow[0] = 1;
     for (int i = 1; i < MAXN; i++) {
         p_pow[i] = p_pow[i - 1] * P % M;

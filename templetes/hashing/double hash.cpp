@@ -20,7 +20,7 @@ long long mod_pow(long long base, long long exp, long long mod) {
 }
 
 // Precompute powers and modular inverses
-void precompute() {
+void INIT() {
     p_pow1[0] = p_pow2[0] = 1;
     for (int i = 1; i < MAXN; i++) {
         p_pow1[i] = p_pow1[i - 1] * P1 % M1;
@@ -58,4 +58,3 @@ struct DoubleHasher {
         return {h1, h2};
     }
 };
-
