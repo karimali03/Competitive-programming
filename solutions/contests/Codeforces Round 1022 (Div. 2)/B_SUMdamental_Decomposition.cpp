@@ -38,22 +38,18 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case){
     int n,x; cin>>n>>x;
-    int cnt = 0;
-    for(int i = 0 ; i < 32 ; i++){
-        if((x>>i)&1) cnt++;
+    int cnt = __builtin_popcountll(x);
+    if(cnt >= n) cout<<x<<ln;
+    else if((n-cnt)%2==0) cout<<n-cnt+x<<ln;
+    else {
+        cnt =  n-cnt;
+        if(x > 1) cout<<x+cnt+1<<ln;
+        else if(x == 1) cout<<x+cnt+3<<ln;
+        else{
+            if(n == 1) cout<<-1<<ln;
+            else cout<<n+3<<ln;
+        }
     }
-  //  cout<<"cnt "<<cnt<<ln;
-    if(cnt >= n) return void(cout<<x<<ln);
-    cnt = n - cnt;
-    if(cnt%2==0) return void(cout<<x+cnt<<ln);
-    if(n == 1) return void(cout<<-1<<ln);
-    for(int i = 0 ; x > 0 &&  i  < 32 ; i++){
-        if( (!((x>>i)&1)) || (n-cnt > 1) ) return void(cout<<(1<<i)*2+x+cnt-1<<ln);
-    }
-    if(cnt >= 3){
-        cout<<3+2+1+cnt-3<<ln;
-    }
-    else cout<<-1<<ln;
 
 }
 
