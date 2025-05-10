@@ -64,68 +64,37 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
-
-int EEA(int a, int b, int& x, int& y) {
-    x = 1, y = 0;
-    int x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        int q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
+int a,b;
+map<int,int>par;
+void dfs(int x){
+    if(x >= b) return;
+    if(!par.count(x*2)){
+        par[x*2] = x;
+        dfs(x*2);
     }
-    return a1;
-}
-
-
-bool find_any_solution(int a, int b, int c, int &x0, int &y0, int &g) {
-    g = EEA(abs(a), abs(b), x0, y0);
-    if (c % g) {
-        return false;
+    if(!par.count(x*10+1)){
+        par[x*10+1] = x;
+        dfs(x*10+1);
     }
-
-    x0 *= c / g;
-    y0 *= c / g;
-    if (a < 0) x0 = -x0;
-    if (b < 0) y0 = -y0;
-    return true;
 }
-
-void shift_solution(int & x, int & y, int a, int b, int cnt) {
-    x += cnt * b;
-    y -= cnt * a;
-}
-
-bool find_valid_solution(int a, int b, int c, int minx, int miny,int & x,int& y) {
-    int g;
-    if (!find_any_solution(a, b, c, x, y, g)) return false;
-    a /= g;
-    b /= g;
-
-    int sign_a = a > 0 ? +1 : -1;
-    int sign_b = b > 0 ? +1 : -1;
-
-    shift_solution(x, y, a, b, (minx - x) / b);
-    if (x < minx)
-        shift_solution(x, y, a, b, sign_b);
-  
-    shift_solution(x, y, a, b, -(miny - y) / a);
-    if (y < miny)
-        shift_solution(x, y, a, b, -sign_a);
-    return true;
-}
-
 
 void solve(int test_case) {
-    int n,m,a,k; 
-    while(true){
-        cin>>n>>m>>a>>k;
-        if( !n && !m && !k && !a) break;
-        int x,y;
-        if(find_valid_solution(m,-a,k+a-n,0,0,x,y)){
-            cout<<n+m*x<<ln;
+    cin>>a>>b;
+    dfs(a);
+    if(!par.count(b)) cout<<"NO\n";
+    else{
+        cout<<"YES\n";
+        vi res;
+        int x = b;
+        while(true){
+            res.push_back(x);
+            if(x == a) break;
+            x = par[x];
         }
-        else cout<<"Impossible\n";
+        reverse(all(res));
+        cout<<res.size()<<ln;
+        for(auto it : res) cout<<it<<" ";
+        cout<<ln;
     }
 }
 
@@ -135,6 +104,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -16,8 +16,12 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define YES cout<<"Yes\n"
+#define NO cout<<"No\n";
+#define INF 1e18
 #define int long long
-
+#define uni(v) v.erase(unique(all(v)), v.end())
+#define pp(x) push_back(x)
 #ifndef ONLINE_JUDGE
 #define debug(x) cerr << #x << " "; _print(x); cerr << endl;
 #else
@@ -65,69 +69,74 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int EEA(int a, int b, int& x, int& y) {
-    x = 1, y = 0;
-    int x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        int q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
+
+int n;
+vii adj;
+vi vis;
+set<int>nodes;
+vi par;
+pair<int,int> bfs(int st){
+    map<int,int>dist;
+    int node = st;
+    queue<int>q; 
+    q.push(st); 
+    dist[st] = 1;
+    int dis = 1;
+    while(!q.empty()){
+        auto x = q.front(); q.pop();
+        for(auto it : adj[x]){
+            if(!vis[it] && !dist.count(it)){
+                dist[it] = 1 + dist[x];
+                q.push(it);
+                if(dist[it] > dis) dis=dist[it],node=it;
+                else if(dist[it] == dis && it > node) node=it;
+                if(!par.empty()) par[it] = x;
+            }
+        }
     }
-    return a1;
+    return {node,dis};
 }
 
+void calc(int node,vii&res){
+    auto t1 = bfs(node);
+    par  = vi(n,-1);
+    auto t2 = bfs(t1.first);
+    res.push_back({t2.second,max(t1.first,t2.first),min(t1.first,t2.first)});
 
-bool find_any_solution(int a, int b, int c, int &x0, int &y0, int &g) {
-    g = EEA(abs(a), abs(b), x0, y0);
-    if (c % g) {
-        return false;
+    debug(t1);
+    debug(t2);
+
+    int x = t2.first;
+    while (x != -1)
+    {
+        vis[x] = 1;
+        nodes.erase(x);
+        x = par[x];
     }
-
-    x0 *= c / g;
-    y0 *= c / g;
-    if (a < 0) x0 = -x0;
-    if (b < 0) y0 = -y0;
-    return true;
+    debug(vis);
 }
-
-void shift_solution(int & x, int & y, int a, int b, int cnt) {
-    x += cnt * b;
-    y -= cnt * a;
-}
-
-bool find_valid_solution(int a, int b, int c, int minx, int miny,int & x,int& y) {
-    int g;
-    if (!find_any_solution(a, b, c, x, y, g)) return false;
-    a /= g;
-    b /= g;
-
-    int sign_a = a > 0 ? +1 : -1;
-    int sign_b = b > 0 ? +1 : -1;
-
-    shift_solution(x, y, a, b, (minx - x) / b);
-    if (x < minx)
-        shift_solution(x, y, a, b, sign_b);
-  
-    shift_solution(x, y, a, b, -(miny - y) / a);
-    if (y < miny)
-        shift_solution(x, y, a, b, -sign_a);
-    return true;
-}
-
 
 void solve(int test_case) {
-    int n,m,a,k; 
-    while(true){
-        cin>>n>>m>>a>>k;
-        if( !n && !m && !k && !a) break;
-        int x,y;
-        if(find_valid_solution(m,-a,k+a-n,0,0,x,y)){
-            cout<<n+m*x<<ln;
-        }
-        else cout<<"Impossible\n";
+    int n; cin>>n;
+    par = vi(n);
+    vii res;
+    adj = vii(n);
+    vis = vi(n);
+    f(i,0,n) nodes.insert(i);
+    for(int i = 0 ,u,v ; i < n-1 ; i++){
+        cin>>u>>v; v--,u--;
+        adj[u].pp(v);
+        adj[v].pp(u);
+    }   
+
+    while(!nodes.empty()){
+        calc(*nodes.begin(),res);
     }
+    sort(rall(res));
+    for(auto it : res) cout<<it[0]<<" "<<it[1]+1<<" "<<it[2]+1<<" ";
+    cout<<ln;
 }
+
 
 signed main() {
     ios_base::sync_with_stdio(false);
@@ -135,6 +144,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin>>t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
