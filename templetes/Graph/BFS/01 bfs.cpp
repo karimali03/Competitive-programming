@@ -1,4 +1,4 @@
-// 0-1 bfs
+// 0-1 BFS
 vector<int> d(n, INF);
 d[s] = 0;
 deque<int> q;
