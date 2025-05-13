@@ -65,92 +65,90 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int di[]{1,-1,0,0};
-int dj[]{0,0,1,-1};
 
-vii adj;
-vi cnt;
-vec<pair<int,int>> cor;
-set<pair<int,int>> points;
 
-void clc(int node, int par) {
-    if (points.count(cor[node])) points.erase(cor[node]);
-    cor[node] = {INT64_MAX,INT64_MAX};
-    for (auto it : adj[node]) {
-        if (it == par) continue;
-        clc(it, node);
-    }
+struct sparse {
+	vector<vector<int>> mn, mx;
+	int n;
+
+	sparse(vector<int>& v) {
+		n = v.size();
+		int LOG = 64 - __builtin_clzll(n); // ensures log2(n) + 1
+		mn = mx  = vector<vector<int>>(n, vector<int>(LOG));
+
+		for (int i = 0; i < n; i++) {
+			mn[i][0] = mx[i][0] = v[i];
+		}
+
+		for (int k = 1; (1 << k) <= n; k++) {
+			for (int i = 0; i + (1 << k) <= n; i++) {
+				mn[i][k] = min(mn[i][k - 1], mn[i + (1 << (k - 1))][k - 1]);
+				mx[i][k] = max(mx[i][k - 1], mx[i + (1 << (k - 1))][k - 1]);	
+			}
+		}
+	}
+
+	int query_min(int L, int R) {
+		int k = 63 - __builtin_clzll(R - L + 1);
+		return min(mn[L][k], mn[R - (1 << k) + 1][k]);
+	}
+
+	int query_max(int L, int R) {
+		int k = 63 - __builtin_clzll(R - L + 1);
+		return max(mx[L][k], mx[R - (1 << k) + 1][k]);
+	}
+
+	
+};
+
+
+int query_sum(int l,int r,vi& pre){
+    return pre[r] - (l ? pre[l-1] : 0);
 }
-
-bool dfs(int u, int par, int x, int y, int dirFromPar) {
-    if (points.count({x, y})) return false;
-    points.insert({x, y});
-    cor[u] = {x, y};
-
-    vector<int> children;
-    for (auto v : adj[u]) {
-        if (v != par) children.push_back(v);
-    }
-
-
-    vi all_dirs = {0, 1, 2, 3};
-    if (dirFromPar != -1) all_dirs.erase(find(all_dirs.begin(), all_dirs.end(), dirFromPar));
-    sort(all_dirs.begin(), all_dirs.end());
-
-    do {
-        bool valid = true;
-        for (int i = 0; i < (int)children.size(); i++) {
-            int pi = all_dirs[i] ^ 1;
-            int nx = x + di[all_dirs[i]]*100;
-            int ny = y + dj[all_dirs[i]]*100;
-            if (!dfs(children[i], u, nx, ny, pi)) {
-                valid = false;
-                break;
+vector<int> sol(int n,vi &v){
+    vi res(n,INT64_MAX);
+    sparse st(v);
+    vi pre(n);
+    f(i,0,n) pre[i] = v[i] + (i?pre[i-1]:0);
+    for(int i = 1  ; i < n ; i++){
+        if(v[i-1] > v[i]) res[i] = 1;
+        else {
+            int l = 0, r = i-2;
+            int ans = -1;
+            while(l <= r){
+                int mid = l + (r-l)/2;
+                if( query_sum(mid,i-1,pre) > v[i] &&  st.query_min(mid,i-1) != st.query_max(mid,i-1)){
+                    l = mid+1;
+                    ans = mid;
+                  
+                }
+                else r = mid-1;
             }
+            if(ans != -1)  res[i] = i - ans;
         }
-        if (valid) return true;
-        for (int i = 0; i < (int)children.size(); i++) clc(children[i], u);
-
-    } while (next_permutation(all_dirs.begin(), all_dirs.end()));
-
- 
-
-    points.erase({x, y});
-    cor[u] = {INT64_MAX,INT64_MAX};
-    return false;
+    
+    }
+    return res;
 }
 
 void solve(int test_case) {
-    int n; cin >> n;
-    adj = vii(n);
-    cnt = vi(n, 0);
-    cor = vec<pair<int,int>>(n);
-    f(i,0,n) cor[i] = {1e18,1e18};
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    stack<int>st;
+    auto r1 = sol(n,v);
+ 
+    reverse(all(v));
+   
+    auto r2 = sol(n,v);
+    reverse(all(r2));
+   
+    f(i,0,n) r1[i] = min(r1[i],r2[i]);
 
-    int st = 0;
-    f(i, 0, n - 1) {
-        int u, v; cin >> u >> v; u--, v--;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-        cnt[u]++; cnt[v]++;
+    f(i,0,n){
+        if(r1[i] == INT64_MAX) cout<<-1<<" ";
+        else cout<<r1[i]<<" ";
     }
-
-    if (*max_element(all(cnt)) > 4) {
-        cout << "NO\n";
-        return;
-    }
-
-
-    if (dfs(0, -1, 0, 0, -1)) {
-            cout << "YES\n";
-            for (auto [x, y] : cor) {
-                cout << x << " " << y << ln;
-            }
-            return;
-    }
-    
-
-    cout << "NO\n";
+    cout<<ln;
 }
 
 signed main() {
@@ -159,6 +157,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

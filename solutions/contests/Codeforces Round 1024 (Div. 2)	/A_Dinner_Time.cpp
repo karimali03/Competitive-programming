@@ -65,92 +65,15 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int di[]{1,-1,0,0};
-int dj[]{0,0,1,-1};
-
-vii adj;
-vi cnt;
-vec<pair<int,int>> cor;
-set<pair<int,int>> points;
-
-void clc(int node, int par) {
-    if (points.count(cor[node])) points.erase(cor[node]);
-    cor[node] = {INT64_MAX,INT64_MAX};
-    for (auto it : adj[node]) {
-        if (it == par) continue;
-        clc(it, node);
-    }
-}
-
-bool dfs(int u, int par, int x, int y, int dirFromPar) {
-    if (points.count({x, y})) return false;
-    points.insert({x, y});
-    cor[u] = {x, y};
-
-    vector<int> children;
-    for (auto v : adj[u]) {
-        if (v != par) children.push_back(v);
-    }
-
-
-    vi all_dirs = {0, 1, 2, 3};
-    if (dirFromPar != -1) all_dirs.erase(find(all_dirs.begin(), all_dirs.end(), dirFromPar));
-    sort(all_dirs.begin(), all_dirs.end());
-
-    do {
-        bool valid = true;
-        for (int i = 0; i < (int)children.size(); i++) {
-            int pi = all_dirs[i] ^ 1;
-            int nx = x + di[all_dirs[i]]*100;
-            int ny = y + dj[all_dirs[i]]*100;
-            if (!dfs(children[i], u, nx, ny, pi)) {
-                valid = false;
-                break;
-            }
-        }
-        if (valid) return true;
-        for (int i = 0; i < (int)children.size(); i++) clc(children[i], u);
-
-    } while (next_permutation(all_dirs.begin(), all_dirs.end()));
-
- 
-
-    points.erase({x, y});
-    cor[u] = {INT64_MAX,INT64_MAX};
-    return false;
-}
-
 void solve(int test_case) {
-    int n; cin >> n;
-    adj = vii(n);
-    cnt = vi(n, 0);
-    cor = vec<pair<int,int>>(n);
-    f(i,0,n) cor[i] = {1e18,1e18};
-
-    int st = 0;
-    f(i, 0, n - 1) {
-        int u, v; cin >> u >> v; u--, v--;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-        cnt[u]++; cnt[v]++;
+    int n,m,p,q; cin>>n>>m>>p>>q;
+    int rem = n%p;
+    int x = m - q * (n/p);
+    if(x == 0){
+        cout<<"YES"<<ln;
     }
-
-    if (*max_element(all(cnt)) > 4) {
-        cout << "NO\n";
-        return;
-    }
-
-
-    if (dfs(0, -1, 0, 0, -1)) {
-            cout << "YES\n";
-            for (auto [x, y] : cor) {
-                cout << x << " " << y << ln;
-            }
-            return;
-    }
-    
-
-    cout << "NO\n";
+    else if(rem == 0) cout<<"NO"<<ln;
+    else cout<<"YES"<<ln;
 }
 
 signed main() {
@@ -159,6 +82,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

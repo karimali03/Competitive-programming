@@ -65,92 +65,69 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int di[]{1,-1,0,0};
-int dj[]{0,0,1,-1};
-
-vii adj;
-vi cnt;
-vec<pair<int,int>> cor;
-set<pair<int,int>> points;
-
-void clc(int node, int par) {
-    if (points.count(cor[node])) points.erase(cor[node]);
-    cor[node] = {INT64_MAX,INT64_MAX};
-    for (auto it : adj[node]) {
-        if (it == par) continue;
-        clc(it, node);
-    }
-}
-
-bool dfs(int u, int par, int x, int y, int dirFromPar) {
-    if (points.count({x, y})) return false;
-    points.insert({x, y});
-    cor[u] = {x, y};
-
-    vector<int> children;
-    for (auto v : adj[u]) {
-        if (v != par) children.push_back(v);
-    }
 
 
-    vi all_dirs = {0, 1, 2, 3};
-    if (dirFromPar != -1) all_dirs.erase(find(all_dirs.begin(), all_dirs.end(), dirFromPar));
-    sort(all_dirs.begin(), all_dirs.end());
+struct sparse {
+	vector<vector<int>> mn, mx;
+	int n;
 
-    do {
-        bool valid = true;
-        for (int i = 0; i < (int)children.size(); i++) {
-            int pi = all_dirs[i] ^ 1;
-            int nx = x + di[all_dirs[i]]*100;
-            int ny = y + dj[all_dirs[i]]*100;
-            if (!dfs(children[i], u, nx, ny, pi)) {
-                valid = false;
-                break;
-            }
-        }
-        if (valid) return true;
-        for (int i = 0; i < (int)children.size(); i++) clc(children[i], u);
+	sparse(vector<int>& v) {
+		n = v.size();
+		int LOG = 64 - __builtin_clzll(n); // ensures log2(n) + 1
+		mn = mx  = vector<vector<int>>(n, vector<int>(LOG));
 
-    } while (next_permutation(all_dirs.begin(), all_dirs.end()));
+		for (int i = 0; i < n; i++) {
+			mn[i][0] = mx[i][0] = v[i];
+		}
 
- 
+		for (int k = 1; (1 << k) <= n; k++) {
+			for (int i = 0; i + (1 << k) <= n; i++) {
+				mn[i][k] = min(mn[i][k - 1], mn[i + (1 << (k - 1))][k - 1]);
+				mx[i][k] = max(mx[i][k - 1], mx[i + (1 << (k - 1))][k - 1]);	
+			}
+		}
+	}
 
-    points.erase({x, y});
-    cor[u] = {INT64_MAX,INT64_MAX};
-    return false;
-}
+	int query_min(int L, int R) {
+		int k = 63 - __builtin_clzll(R - L + 1);
+		return min(mn[L][k], mn[R - (1 << k) + 1][k]);
+	}
+
+	int query_max(int L, int R) {
+		int k = 63 - __builtin_clzll(R - L + 1);
+		return max(mx[L][k], mx[R - (1 << k) + 1][k]);
+	}
+
+	
+};
+
 
 void solve(int test_case) {
-    int n; cin >> n;
-    adj = vii(n);
-    cnt = vi(n, 0);
-    cor = vec<pair<int,int>>(n);
-    f(i,0,n) cor[i] = {1e18,1e18};
-
-    int st = 0;
-    f(i, 0, n - 1) {
-        int u, v; cin >> u >> v; u--, v--;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-        cnt[u]++; cnt[v]++;
+    int n; cin>>n;
+    vi a(n),b(n); cin>>a>>b;
+    f(i,0,n) if(a[i] > b[i]) return void(cout<<"NO\n");
+    vii idx(n+1);
+    f(i,0,n){
+        idx[b[i]].push_back(i);
+        idx[a[i]].push_back(i);
     }
-
-    if (*max_element(all(cnt)) > 4) {
-        cout << "NO\n";
-        return;
-    }
-
-
-    if (dfs(0, -1, 0, 0, -1)) {
-            cout << "YES\n";
-            for (auto [x, y] : cor) {
-                cout << x << " " << y << ln;
+    sparse st1(a);
+    sparse st2(b);
+    for(int i = 1 ; i <= n ; i++){
+        if(idx[i].empty()) continue;
+        bool found = (a[idx[i][0]] == i);
+        for(int x = 1 ; x < idx[i].size() ; x++){
+            int mn = st1.query_max(idx[i][x-1],idx[i][x]);
+            int mx = st2.query_min(idx[i][x-1],idx[i][x]);
+            if(mn > i || mx < i){
+                if(!found) return void(cout<<"NO\n");
+                found = (a[idx[i][x]] == i);
             }
-            return;
+            else found|=(a[idx[i][x]]==i);
+        }
+        if(!found) return void(cout<<"NO\n");
     }
-    
-
-    cout << "NO\n";
+    cout<<"YES\n";
 }
 
 signed main() {
@@ -159,6 +136,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
