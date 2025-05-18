@@ -65,51 +65,43 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int countInversions(vi &v,int l,int r){
-    if(l >= r) return 0;
-    int mid = (l+r)/2;
-    int res = countInversions(v,l,mid) + countInversions(v,mid+1,r);
-    vi x(r-l+1);
-    int i = l , j = mid+1 , k = 0;
-    while(i <= mid && j <= r){
-        if(v[i] <= v[j]){
-            res+=(j-mid-1);
-            x[k++] = v[i++];
-        }
-        else x[k++] = v[j++];
+
+
+struct dsu {
+    vector<int> par;
+    int cc;
+
+    dsu(int n) : cc(n), par(n + 1) {
+        for (int i = 0; i <= n; i++) par[i] = i;
     }
-    while(i <= mid){
-        res+=(j-mid-1);
-        x[k++] = v[i++];
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        return par[x] = get(par[x]);
     }
-    while(j <= r){
-        x[k++] = v[j++];
+
+    bool merge(int x, int y) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        par[x] = y;
+        cc--;
+        return true;
     }
-    for(int i = l ; i <= r ; i++) v[i] = x[i-l];
-    return res;
-}
+
+};
 
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    vi res1,res2;
-    f(i,0,n){
-        if(i&1) res2.push_back(v[i]);
-        else res1.push_back(v[i]);
+    dsu st(n);
+    for(int i  =0 ; i  < n ; i++){
+        int x; cin>>x;
+        int ch = st.get(x-1);
+        cout<<ch+1<<" ";
+        if(ch == n-1) st.merge(ch,0);
+        else st.merge(ch,ch+1);
     }
-    int inv1 = countInversions(v,0,n-1);
-    sort(all(res1)); sort(all(res2));
-    vi res;
-    for(int i = 0 ; i <= n/2 ; i++){
-        if(i < res1.size()) res.push_back(res1[i]);
-        if(i < res2.size()) res.push_back(res2[i]);
-    }
-    vi r = res;
-    int inv2 = countInversions(r,0,n-1);
-    if((inv1%2) != (inv2%2) ) swap(res[n-1],res[n-3]);
-    f(i,0,n) cout<<res[i]<<" ";
-    cout<<ln;
 }
 
 signed main() {
@@ -118,7 +110,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+  
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

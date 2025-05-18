@@ -16,7 +16,9 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
-#define int long long
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
 
 #ifndef ONLINE_JUDGE
 #define debug(x) cerr << #x << " "; _print(x); cerr << endl;
@@ -65,51 +67,83 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int countInversions(vi &v,int l,int r){
-    if(l >= r) return 0;
-    int mid = (l+r)/2;
-    int res = countInversions(v,l,mid) + countInversions(v,mid+1,r);
-    vi x(r-l+1);
-    int i = l , j = mid+1 , k = 0;
-    while(i <= mid && j <= r){
-        if(v[i] <= v[j]){
-            res+=(j-mid-1);
-            x[k++] = v[i++];
-        }
-        else x[k++] = v[j++];
+
+struct dsu {
+    vector<int> size, par;
+    int cc;
+
+    dsu(int n) : cc(n), size(n + 1, 1), par(n + 1) {
+        for (int i = 0; i <= n; i++) par[i] = i;
     }
-    while(i <= mid){
-        res+=(j-mid-1);
-        x[k++] = v[i++];
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        return par[x] = get(par[x]);
     }
-    while(j <= r){
-        x[k++] = v[j++];
+
+    bool merge(int x, int y) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        if (size[x] > size[y]) swap(x, y);
+        par[x] = y;
+        size[y] += size[x];
+        cc--;
+        return true;
     }
-    for(int i = l ; i <= r ; i++) v[i] = x[i-l];
-    return res;
+
+};
+
+
+struct edge {
+	int from, to, w ;
+
+	edge(int from = -1 , int to = -1, int w = -1) :
+			from(from), to(to), w(w)  {
+	}
+
+	bool operator <(const edge &e) const {
+		return w < e.w;
+	}
+};
+
+int MST_Kruskal(vector<edge> &edgeList, int n , int idx) { // O(E logV)
+	dsu uf(n);
+	int mn = INT32_MAX;
+    int mx = INT32_MIN;
+	
+
+	for(int i = idx  ;i  < edgeList.size() ; i++){
+        auto e = edgeList[i];
+		if (uf.merge(e.from, e.to)) {
+			mn = min(mn , e.w);
+            mx = max(mx , e.w);
+		}
+        if(uf.cc == 1) break;
+	}
+  
+	if(uf.cc != 1) return INT32_MAX;
+	return mx-mn;
 }
 
 
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    vi res1,res2;
-    f(i,0,n){
-        if(i&1) res2.push_back(v[i]);
-        else res1.push_back(v[i]);
+    int n,m; cin>>n>>m;
+    vector<edge>v(m);
+    f(i,0,m){
+        int x,y,w; cin>>x>>y>>w;
+        v[i] = edge(x,y,w);
     }
-    int inv1 = countInversions(v,0,n-1);
-    sort(all(res1)); sort(all(res2));
-    vi res;
-    for(int i = 0 ; i <= n/2 ; i++){
-        if(i < res1.size()) res.push_back(res1[i]);
-        if(i < res2.size()) res.push_back(res2[i]);
+    sort(all(v));
+    int mn = INT32_MAX;
+    for(int i = 0 ; i < m ; i++){
+        mn = min(mn , MST_Kruskal(v,n,i));
     }
-    vi r = res;
-    int inv2 = countInversions(r,0,n-1);
-    if((inv1%2) != (inv2%2) ) swap(res[n-1],res[n-3]);
-    f(i,0,n) cout<<res[i]<<" ";
-    cout<<ln;
+    if(mn == INT32_MAX) NO;
+    else {
+        YES;
+        cout<<mn<<ln;
+    }
 }
 
 signed main() {
@@ -118,7 +152,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

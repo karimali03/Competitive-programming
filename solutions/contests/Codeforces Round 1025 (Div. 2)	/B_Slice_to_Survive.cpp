@@ -65,51 +65,32 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int countInversions(vi &v,int l,int r){
-    if(l >= r) return 0;
-    int mid = (l+r)/2;
-    int res = countInversions(v,l,mid) + countInversions(v,mid+1,r);
-    vi x(r-l+1);
-    int i = l , j = mid+1 , k = 0;
-    while(i <= mid && j <= r){
-        if(v[i] <= v[j]){
-            res+=(j-mid-1);
-            x[k++] = v[i++];
-        }
-        else x[k++] = v[j++];
-    }
-    while(i <= mid){
-        res+=(j-mid-1);
-        x[k++] = v[i++];
-    }
-    while(j <= r){
-        x[k++] = v[j++];
-    }
-    for(int i = l ; i <= r ; i++) v[i] = x[i-l];
-    return res;
+pair<int,int> cut(int i,int j,int n,int m){
+    int ch1 = i * m;
+    int ch2 = (n - i - 1) *  m;
+    int ch3 =  j * n;
+    int ch4 = ( m - j - 1) *  m;
+    int mn = max({ch1,ch2,ch3,ch4});
+    if(mn == ch1) return { n - i  , m};
+    if(mn == ch2) return { i +1 , m};
+    if(mn == ch3) return { n , m - j};
+    return { n,  j+1};
 }
 
-
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    vi res1,res2;
-    f(i,0,n){
-        if(i&1) res2.push_back(v[i]);
-        else res1.push_back(v[i]);
+    int n,m,a,b; cin>>n>>m>>a>>b;
+    a--,b--;
+    int cnt = 0;
+    while(n > 1 || m > 1){
+        auto [x,y] = cut(a,b,n,m);
+        n = x , m = y;
+    
+        cnt++;
+        a = n/2 , b = m/2;
+        if(n%2 == 0) a = (n+1)/2;
+        if(m%2 == 0) b = (m+1)/2;
     }
-    int inv1 = countInversions(v,0,n-1);
-    sort(all(res1)); sort(all(res2));
-    vi res;
-    for(int i = 0 ; i <= n/2 ; i++){
-        if(i < res1.size()) res.push_back(res1[i]);
-        if(i < res2.size()) res.push_back(res2[i]);
-    }
-    vi r = res;
-    int inv2 = countInversions(r,0,n-1);
-    if((inv1%2) != (inv2%2) ) swap(res[n-1],res[n-3]);
-    f(i,0,n) cout<<res[i]<<" ";
-    cout<<ln;
+    cout<<cnt<<ln;
 }
 
 signed main() {

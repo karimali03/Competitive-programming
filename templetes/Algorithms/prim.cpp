@@ -1,11 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <cassert>
-#include <limits>
-#include <queue>
-using namespace std;
-
 const int OO = 2 * 1e6 * 1000;	
 
 
@@ -53,9 +45,4 @@ int MST(const vector<vector<edge>> &adjList, int n, int src=0) {
 		vis[mnIdx] = true;
 	}
 	return mstCost;
-}
-
-
-int main(){
-    return 0;
 }

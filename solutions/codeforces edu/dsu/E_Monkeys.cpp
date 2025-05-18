@@ -16,7 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
-#define int long long
+
 
 #ifndef ONLINE_JUDGE
 #define debug(x) cerr << #x << " "; _print(x); cerr << endl;
@@ -65,51 +65,85 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int countInversions(vi &v,int l,int r){
-    if(l >= r) return 0;
-    int mid = (l+r)/2;
-    int res = countInversions(v,l,mid) + countInversions(v,mid+1,r);
-    vi x(r-l+1);
-    int i = l , j = mid+1 , k = 0;
-    while(i <= mid && j <= r){
-        if(v[i] <= v[j]){
-            res+=(j-mid-1);
-            x[k++] = v[i++];
+
+
+
+
+struct dsu {
+    vector<int> size, par , time;
+    int cc;
+
+    dsu(int n) : cc(n) , size(n + 1, 0), par(n + 1) , time(n+1,-1) {
+        for (int i = 0; i <= n; i++) par[i] = i;
+    }
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        int pr = par[x];
+        par[x] = get(par[x]);
+        if(time[x] == -1) time[x] = time[pr];
+        if(pr != par[x]){
+            if(time[x] == -1) time[x] = time[par[x]];
         }
-        else x[k++] = v[j++];
+        return par[x];
     }
-    while(i <= mid){
-        res+=(j-mid-1);
-        x[k++] = v[i++];
+
+    bool merge(int x, int y , int t) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        int pr = get(1);
+        if(x == pr && y != pr) par[y] = x , time[y] = t;
+        else{
+            if(y == pr && x != pr) time[x] = t;
+            par[x] = y;
+        } 
+        cc--;
+        return true;
     }
-    while(j <= r){
-        x[k++] = v[j++];
-    }
-    for(int i = l ; i <= r ; i++) v[i] = x[i-l];
-    return res;
-}
+
+
+
+};
+
 
 
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    vi res1,res2;
-    f(i,0,n){
-        if(i&1) res2.push_back(v[i]);
-        else res1.push_back(v[i]);
+    int n,m; cin>>n>>m;
+    vii v(n+1,vi(2));
+    vii vis(n+1,vi(2));
+   for(int i = 1 ; i <= n ; i++){
+        cin>>v[i][0]>>v[i][1];
     }
-    int inv1 = countInversions(v,0,n-1);
-    sort(all(res1)); sort(all(res2));
-    vi res;
-    for(int i = 0 ; i <= n/2 ; i++){
-        if(i < res1.size()) res.push_back(res1[i]);
-        if(i < res2.size()) res.push_back(res2[i]);
+    vii q(m,vi(2));
+    f(i,0,m){
+        cin>>q[i][0]>>q[i][1];  q[i][1]--;
+        vis[q[i][0]][q[i][1]] = 1;
     }
-    vi r = res;
-    int inv2 = countInversions(r,0,n-1);
-    if((inv1%2) != (inv2%2) ) swap(res[n-1],res[n-3]);
-    f(i,0,n) cout<<res[i]<<" ";
-    cout<<ln;
+
+  
+
+    dsu st(n);
+    for(int i = 1 ; i <= n ; i++){
+        if(!vis[i][0] && v[i][0] != -1){
+            st.merge(i,v[i][0],-1);
+        }
+        if(!vis[i][1] && v[i][1] != -1){
+            st.merge(i,v[i][1],-1);
+        }
+    }
+
+
+    for(int i = m-1 ; i >= 0 ; i--){
+        if(v[q[i][0]][q[i][1]] != -1){
+            st.merge(q[i][0],v[q[i][0]][q[i][1]],i);
+        }
+    }
+
+    for(int i = 1 ; i <= n ; i++){
+        st.get(i);
+        cout<<st.time[i]<<ln;
+    }
 }
 
 signed main() {
@@ -118,7 +152,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

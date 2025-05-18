@@ -17,6 +17,9 @@ using namespace std;
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
 #define int long long
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
 
 #ifndef ONLINE_JUDGE
 #define debug(x) cerr << #x << " "; _print(x); cerr << endl;
@@ -65,51 +68,53 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int countInversions(vi &v,int l,int r){
-    if(l >= r) return 0;
-    int mid = (l+r)/2;
-    int res = countInversions(v,l,mid) + countInversions(v,mid+1,r);
-    vi x(r-l+1);
-    int i = l , j = mid+1 , k = 0;
-    while(i <= mid && j <= r){
-        if(v[i] <= v[j]){
-            res+=(j-mid-1);
-            x[k++] = v[i++];
-        }
-        else x[k++] = v[j++];
-    }
-    while(i <= mid){
-        res+=(j-mid-1);
-        x[k++] = v[i++];
-    }
-    while(j <= r){
-        x[k++] = v[j++];
-    }
-    for(int i = l ; i <= r ; i++) v[i] = x[i-l];
-    return res;
-}
 
+struct dsu {
+    vector<int> size, par, boss;
+    int cc;
+
+    dsu(int n) : cc(n), size(n + 1, 1), par(n + 1), boss(n + 1, 0) {
+        for (int i = 0; i <= n; i++) par[i] = i;
+    }
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        int p = par[x];
+        par[x] = get(p);
+        boss[x] += boss[p];  // sum distances up the tree
+        return par[x];
+    }
+
+    bool merge(int x, int y) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        par[x] = y;
+        boss[x] = 1;  // edge from x's root to y's root has length 1
+        cc--;
+        return true;
+    }
+
+    int ans(int x) {
+        get(x);  // compress paths and update boss[x]
+        return boss[x];
+    }
+};
 
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    vi res1,res2;
-    f(i,0,n){
-        if(i&1) res2.push_back(v[i]);
-        else res1.push_back(v[i]);
-    }
-    int inv1 = countInversions(v,0,n-1);
-    sort(all(res1)); sort(all(res2));
-    vi res;
-    for(int i = 0 ; i <= n/2 ; i++){
-        if(i < res1.size()) res.push_back(res1[i]);
-        if(i < res2.size()) res.push_back(res2[i]);
-    }
-    vi r = res;
-    int inv2 = countInversions(r,0,n-1);
-    if((inv1%2) != (inv2%2) ) swap(res[n-1],res[n-3]);
-    f(i,0,n) cout<<res[i]<<" ";
-    cout<<ln;
+    int n,m; cin>>n>>m;
+    dsu st(n);
+    while(m--){
+        int op; cin>>op;
+        if(op == 1){
+            int x,y; cin>>x>>y;
+            st.merge(x,y);
+        }
+        else{
+            int x; cin>>x;
+            cout<<st.ans(x)<<ln;
+        }
+    }   
 }
 
 signed main() {
@@ -118,7 +123,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+  
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
