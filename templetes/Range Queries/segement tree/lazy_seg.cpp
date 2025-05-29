@@ -30,8 +30,8 @@ struct SegmentTree {
                 lazy[v * 2 + 1] += lazy[v];
                 lazy[v * 2 + 2] += lazy[v];
             }
-            push(v * 2 + 1, tl, (tl + tr) / 2); 
-            push(v * 2 + 2, (tl + tr) / 2 + 1, tr);
+            push(v * 2 + 1, tl, (tl + tr) / 2 , deg-1); 
+            push(v * 2 + 2, (tl + tr) / 2 + 1, tr , deg-1);
         }
             lazy[v] = no_operation;
     }

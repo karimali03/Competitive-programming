@@ -1,10 +1,3 @@
-#include<iostream>
-#include<cstring>	// memset
-#include<map>
-#include<vector>
-using namespace std;
-
-
 struct Trie {
     private:
         
@@ -75,22 +68,3 @@ struct Trie {
     
     };
     
-
-
-
-int main() {
-	Trie tree;
-
-    tree.insert("abcd");
-	tree.insert("abxyz");
-	tree.insert("a");
-	tree.insert("ab");
-	tree.insert("abxyzw");
-	tree.insert("bcd");
-
-	vector<string> res;
-	tree.auto_complete("ab",res);
-	for (int i = 0; i < (int) res.size(); ++i)
-		cout << res[i] << "\n";
-	return 0;
-}
