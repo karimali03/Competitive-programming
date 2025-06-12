@@ -1,10 +1,3 @@
-#include <bits/stdc++.h>
-#include <iostream>
-#define int long long 
-using namespace std;
-
-
-
 const int mod = 1000000007;
 
 int add(int a, int b) {
