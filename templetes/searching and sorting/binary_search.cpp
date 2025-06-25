@@ -1,9 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
 // attention !! :  r is like end is Standard library
-int lower_bound_custom(const vector<int>& v, int start, int end, int val) {
+int lower_bound(vector<int>& v, int start, int end, int val) {
     int l = start, r = end;
 
     while (l < r) {
@@ -19,7 +15,7 @@ int lower_bound_custom(const vector<int>& v, int start, int end, int val) {
     return l;
 }
 
-int upper_bound_custom(const vector<int>& v, int start, int end, int val) {
+int upper_bound(vector<int>& v, int start, int end, int val) {
     int l = start, r = end;
 
     while (l < r) {
