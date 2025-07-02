@@ -56,3 +56,29 @@ number with max number of divisors is called HCN
 if you're dividing something (e.g., grid, people, blocks), HCNs make ideal candidates since they divide easily due to many factors.
 */
 
+  /*
+        Divisbility Rules :
+
+        Number is divisible by 2 if last digit equal 0,2,4,6,8
+
+        Number is divisible by 3 if sum of digits divisible by 3
+
+        Number is divisible by 4 if the last two digits divisible by 4  
+        ex: 1936  36%4==0
+
+        Number is divisible by 5 if last digit is 0 or 5
+
+        Number is divisible by 6 if it is divisible by 2 & 3
+
+        Number is divisible by 8 if the last 3 digits is divisible by 8
+
+        Number is divisible by 9 if sum of digits if divisible by 9
+
+        Number is divisible by 10 is the last digit is 0
+
+        Number is divisible by 11 is the difference between
+        Odd indexes and even indexes is divisible by 11
+
+        Number is divisible by 12 if it is divisible by 3 and 4
+
+        */

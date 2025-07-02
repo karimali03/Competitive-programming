@@ -1,15 +1,7 @@
-/*
-    1. General Graph (arbitrary capacities):
-       - Time: O(V^2 * E)
-    2. Unit Capacity Graphs (capacities = 1):
-       - Time: O(√V * E)
-    3. Bounded Small Capacities (e.g., 1 ≤ c ≤ 1000):
-       - Time: Better than general case, often around O(min(V^2, E√V))
-    - Dinic is best for sparse graphs or unit capacity cases
-    - For large capacities or dense graphs, use Push-Relabel or Capacity Scaling
-  */
-  
-const int MAXV = 1005;
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXV = 205 + 2; // max nodes = decisions + source + sink
 const int INF = 1e9;
 
 struct Dinic {
@@ -56,7 +48,7 @@ struct Dinic {
         if (v == t) return pushed;
         for (int &i = ptr[v]; i < adj[v].size(); ++i) {
             Edge &e = adj[v][i];
-            if (level[e.to] != level[v] + 1 || e.flow == e.cap) continue;
+            if (level[e.to] != level[v] + 1 || e.cap - e.flow == 0) continue;
             int tr = dfs(e.to, min(pushed, e.cap - e.flow));
             if (tr == 0) continue;
             e.flow += tr;
@@ -76,45 +68,39 @@ struct Dinic {
         }
         return flow;
     }
-
-    vector<vector<int>> paths;
-
-    bool dfs_path(int u, vector<int> &path) {
-        if (u == t) {
-            paths.push_back(path);
-            return true;
-        }
-        for (auto &e : adj[u]) {
-            if (e.cap > 0 && e.flow == e.cap) {
-                path.push_back(e.to);
-                e.flow = 0; // mark used
-                if (dfs_path(e.to, path)) return true;
-                path.pop_back();
-                e.flow = e.cap; // backtrack
-            }
-        }
-        return false;
-    }
-
-    vector<vector<int>> getAllFlowPaths() {
-        paths.clear();
-        while (true) {
-            vector<int> path = {s};
-            if (!dfs_path(s, path)) break;
-        }
-        return paths;
-    }
-
-    void printGraph(int n) {
-        cout << "Graph (Node -> [To, Cap, Flow]):\n";
-        for (int i = 0; i < n; ++i) {
-            if (adj[i].empty()) continue;
-            cout << "Node " << i << ": ";
-            for (const auto &e : adj[i]) {
-                if (e.cap > 0)
-                    cout << "[" << e.to << ", " << e.cap << ", " << e.flow << "] ";
-            }
-            cout << "\n";
-        }
-    }
 };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin >> n >> m;
+
+    int source = n;
+    int sink = n + 1;
+    Dinic dinic;
+    dinic.init(source, sink);
+
+    vector<int> d(n);
+    int totalPositive = 0;
+    for (int i = 0; i < n; ++i) {
+        cin >> d[i];
+        if (d[i] >= 0) {
+            dinic.addEdge(i, sink, d[i]); // profit edge
+            totalPositive += d[i];
+        } else {
+            dinic.addEdge(source, i, -d[i]); // penalty edge
+        }
+    }
+
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        cin >> u >> v;
+        --u, --v; // convert to 0-based
+        dinic.addEdge(u, v, INF); // enforce dependency
+    }
+
+    int maxFlow = dinic.maxFlow();
+    cout << totalPositive - maxFlow << '\n';
+}

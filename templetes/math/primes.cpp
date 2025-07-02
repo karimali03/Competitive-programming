@@ -65,3 +65,15 @@ map<int, int> fact(int n) {  // O(sqrt(n))
     return res;
 }
 
+
+vector<int> fact(int x){
+    vector<int>ret;
+    for (ll i = 2; i*i <= x; ++i) {
+        while (x % i == 0){
+            x /= i;
+            ret.push_back(i);
+        }
+    }
+    if(x > 1)ret.push_back(x);
+    return ret;
+}
