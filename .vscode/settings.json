@@ -1,7 +1,7 @@
 {
     "files.associations": {
-        "numeric": "cpp",
-        "ostream": "cpp",
-        "iostream": "cpp"
+        "istream": "cpp",
+        "tuple": "cpp",
+        "variant": "cpp"
     }
 }

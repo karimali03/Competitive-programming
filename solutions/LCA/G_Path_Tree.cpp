@@ -65,7 +65,7 @@ istream &operator>>(istream &in, vector<T> &v) {
 template<typename T = int>
 ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
-   return out;
+    return out;
 }
 
 
@@ -100,7 +100,7 @@ void INIT() {
 
 
 const int N = 100005;
-const int LOG = 20;
+const int LOG = 17;
 vector<int> adj[N];
 int up[N][LOG];
 int h1[N][LOG],h2[N][LOG];
@@ -165,6 +165,12 @@ int lca(int u,int v){
     return up[u][0];   
 }
 
+int get_kth(int u,int k){
+     for (int j = LOG - 1; j >= 0; --j)
+            if ((k >> j) & 1)  u = up[u][j];
+    return u;
+}
+
 int get(int u,int v){
     int lc = lca(u,v);
     int dif1 = lvl[u] - lvl[lc];
@@ -186,15 +192,49 @@ int get(int u,int v){
     return (res.first + ch[lc] * p_pow[dif1] + res.second *  p_pow[dif1+1] )%M;
 }
 
+int find_node(int u,int v,int idx,int lc){
+    int uc = lvl[u] - lvl[lc];
+    int vc = lvl[v] - lvl[lc];
+    if(idx <= uc) return get_kth(u,idx);
+    return get_kth(v,vc-(idx-uc));
+}
 
+int calc(int a,int b,int c,int d){
+    if(ch[a] > ch[c]) return 1;
+    else if(ch[c] > ch[a]) return 2;
+
+    int lc1 = lca(a,b);
+    int len1 = lvl[a] + lvl[b] - 2*lvl[lc1] + 1;
+    int lc2 = lca(c,d);
+    int len2 = lvl[c] + lvl[d] - 2*lvl[lc2] + 1;
+    int l = 1 , r = min(len1,len2);
+    int ans = 1;
+    while(l<=r){
+        int mid = l + (r-l)/2;
+        int c1 = find_node(a,b,mid-1,lc1);
+        int c2 = find_node(c,d,mid-1,lc2);
+        int h1 = get(a,c1);
+        int h2 = get(c,c2);
+        if(h1 == h2){
+            l = mid+1; ans = mid;
+        }else r = mid-1;
+    }
+    if(ans == len1 && ans == len2) return 0;
+    else if(ans == len1) return 2;
+    else if(ans == len2) return 1;
+    int c1 = find_node(a,b,ans,lc1);
+    int c2 = find_node(c,d,ans,lc2);
+    if(ch[c1] > ch[c2]) return 1;
+    return 2;
+}
 void solve(int test_case) {
     int n; cin>>n;
-    init(n); 
-    f(i,0,n){
+    init(n);
+    for(int i =0 ; i <  n; i++){
         char c; cin>>c;
         ch[i] = c-'a'+1;
-    }
-    for(int i = 0 ; i < n-1; i++){
+    }   
+    for(int i = 0 ; i < n-1 ; i++){
         int x,y; cin>>x>>y; x--,y--;
         adj[x].push_back(y);
         adj[y].push_back(x);
@@ -202,20 +242,21 @@ void solve(int test_case) {
     build();
     int q; cin>>q;
     while(q--){
-        int u,v; cin>>u>>v; u--,v--;
-     
-        if(get(u,v) == get(v,u)) cout<<"1\n";
-        else cout<<"0\n";
+        int a,b,c,d; cin>>a>>b>>c>>d; a--,b--,c--,d--;
+        int res = calc(a,b,c,d);
+        cout<<res<<ln;
     }
+    
 }
 
 signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
-    INIT();
+
     int t = 1;
-   // cin >> t;
+    cin>>t;
+    INIT();
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
