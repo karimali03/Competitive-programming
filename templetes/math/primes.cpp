@@ -76,4 +76,4 @@ vector<int> fact(int x){
     }
     if(x > 1)ret.push_back(x);
     return ret;
-}
+}  

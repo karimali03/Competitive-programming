@@ -46,6 +46,10 @@ struct SegmentTree {
             tree[v] = merge(tree[v * 2 + 1], tree[v * 2 + 2]);
         }
     }
+    
+    void build(vector<bitset<20>> &a){
+        build(a,0,0,sz-1);
+    }
 
     node query(int v, int tl, int tr, int l, int r) {
         push(v, tl, tr);
@@ -55,6 +59,10 @@ struct SegmentTree {
         node left = query(v * 2 + 1, tl, tm, l, min(r, tm));
         node right = query(v * 2 + 2, tm + 1, tr, max(l, tm + 1), r);
         return merge(left, right);
+    }
+    
+    node query(int l,int r){
+        return query(0,0,sz-1,l,r);
     }
 
     void update(int v, int tl, int tr, int l, int r, int addend) {
@@ -69,5 +77,9 @@ struct SegmentTree {
             update(v * 2 + 2, tm + 1, tr, max(l, tm + 1), r, addend);
             tree[v] = merge(tree[v * 2 + 1], tree[v * 2 + 2]);
         }
+    }
+    
+    void update(int l,int r,int idx){
+         update(0,0,sz-1,l,r,idx);
     }
 };

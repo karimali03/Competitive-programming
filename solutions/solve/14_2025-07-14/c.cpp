@@ -67,82 +67,24 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
-
-const int N = 300005;
-vector<pair<int,int>> adj[N];
-int low[N],tin[N];
-bool is_bridge[N],is_arc[N];
-int timer = 0;
-void init(int n,int m){
-    for(int i = 0 ; i < n ; i++){
-        is_arc[i] = false;
-        adj[i].clear();
-        low[i] = 1e9; tin[i] = -1;
+const int N = 30005;
+vector<int> adj[N];
+int vis[N]{};
+void dfs(int v){
+    vis[v] = 1;
+    for(auto it : adj[v]){
+        if(!vis[it]) dfs(it);
     }
-    for(int i = 0 ; i < m ; i++) is_bridge[i] = false;
-    timer = 0;
+    cout<<v+1<<" ";
 }
-void tarjain(int v,int p){
-    low[v] = tin[v] = timer++;
-    int kids = 0;
-    for(auto [u,e] : adj[v]){
-        if(u == p) continue;
-        if(tin[u] != -1){ // back edge
-            low[v] = min(low[v] , tin[u]);
-            continue;
-        }
-        tarjain(u,v); // tree edge
-        low[v] = min(low[v],low[u]);
-        if(low[u] > tin[v]) is_bridge[e] = true;
-        if(p != -1 && low[u] >= tin[v]) is_arc[v] = true;
-        kids++;
-    }
-    if(p == -1 && kids > 1) is_arc[v] = true;
-}
-
-
-pair<int, int> bfs(int start,int n) {
-    vector<int> dist(n, -1);
-    queue<int> q;
-    q.push(start);
-    dist[start] = 0;
-    int mx = 0;
-    int node = start;
-    while(!q.empty()){
-        auto cur = q.front(); q.pop();
-        for(auto [x,y] : adj[cur]){
-            if(dist[x] == -1){
-                dist[x] = dist[cur] + 1;
-                if(dist[x] > mx){
-                    mx = dist[x];
-                    node = x;
-                }
-                q.push(x);
-            }
-        }
-    }
-    return {node,mx};
-}
-
-int getDiameter(int n) {
-    auto [u, _] = bfs(0,n);
-    auto [v, diameter] = bfs(u,n);
-    return diameter;
-}
-
-
 void solve(int test_case) {
     int n,m; cin>>n>>m;
-    init(n,m);
-    for(int i = 0 ;i <m;i++){
-        int x,y; cin>>x>>y;
-        adj[x-1].push_back({y-1,i});
-        adj[y-1].push_back({x-1,i});
+    for(int i = 0 ; i < m ; i++){
+        int x,y; cin>>x>>y; x--,y--;
+        adj[x].push_back(y);
     }
-    tarjain(0,-1);
-    int res = getDiameter(n);
-    cout<<res<<ln;
-
+    for(int i = 0 ; i < n ;i++) if(!vis[i]) dfs(i);
+    cout<<ln;
 }
 
 signed main() {
@@ -151,7 +93,6 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-  
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

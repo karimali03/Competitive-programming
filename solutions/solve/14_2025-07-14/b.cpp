@@ -67,88 +67,47 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
-
-const int N = 300005;
-vector<tuple<int,int,int>> adj[N];
-int low[N],tin[N];
-bool is_bridge[N],is_arc[N];
-int timer = 0;
-int id[N];
-vector<pair<int,int>> adj2[N];
-int val[N]{};
-void init(int n,int m){
-    for(int i = 0 ; i < n ; i++){
-        is_arc[i] = false;
-        adj[i].clear();
-        adj2[i].clear();
-        low[i] = 1e9; tin[i] = id[i] =  -1;
+const int N = 41;
+int v[N];
+int n,s;
+vector<int> l[4];
+vector<int> r[4];
+void rec(int i,int sum,int rem){
+    if(i == n/2){
+        l[rem].push_back(sum);
+        return;
     }
-    for(int i = 0 ; i < m ; i++) is_bridge[i] = false;
-    timer = 0;
+    rec(i+1,sum,rem);
+    if(v[i] >= 0) rec(i+1,sum+v[i],3);
+    else if(rem > 0) rec(i+1,sum+v[i],rem-1);
 }
-void tarjain(int v,int p){
-    low[v] = tin[v] = timer++;
-    int kids = 0;
-    for(auto [u,e,z] : adj[v]){
-        if(u == p) continue;
-        if(tin[u] != -1){ // back edge
-            low[v] = min(low[v] , tin[u]);
-            continue;
-        }
-        tarjain(u,v); // tree edge
-        low[v] = min(low[v],low[u]);
-        if(low[u] > tin[v]) is_bridge[e] = true;
-        if(p != -1 && low[u] >= tin[v]) is_arc[v] = true;
-        kids++;
+void rec2(int i,int sum,int rem, int st){
+    if(i == n){
+        r[st].push_back(sum);
+        return;
     }
-    if(p == -1 && kids > 1) is_arc[v] = true;
-}
-
-void bridge_tree(int v,int p , int x){
-    id[v] = x;
-    for(auto [u,e,z] : adj[v]){
-        if(u == p) continue;
-        if(is_bridge[e]) bridge_tree(u,v,u);
-        else if(id[u] == -1) bridge_tree(u,v,x);
-    }
-}
-
-
-int dfs(int u,int p,int res , int to){
-    res += val[u];
-    if(u == to) return res>0;
-    bool ret = false;
-    for(auto [a,b] : adj2[u]){
-        if(a == p) continue;
-        ret|=dfs(a,u,res+b,to);
-    }
-    return ret;
+    rec2(i+1,sum,rem,st);
+    if(v[i] >= 0) rec2(i+1,sum+v[i],3,st);
+    else if(rem > 0) rec2(i+1,sum+v[i],rem-1,st);
 }
 void solve(int test_case) {
-    int n,m; cin>>n>>m;
-    init(n,m);
-    vector<pair<int,pair<int,int>>>edg(m);
-    for(int i=0;i<m;i++){
-        int x,y,z; cin>>x>>y>>z; x--,y--;
-        adj[x].push_back({y,i,z});
-        adj[y].push_back({x,i,z});
-        edg[i] = {z,{x,y}};
+    cin>>n>>s;
+    f(i,0,n) cin>>v[i];
+    rec(0,0,3);
+    f(i,0,4) sort(all(l[i]));
+    for(int i =0; i < 4 ; i++){
+        rec2(n/2,0,i,i);
     }
-    int a,b; cin>>a>>b; a--,b--;
-    tarjain(0,-1);
-    bridge_tree(0,-1,0);
-    for(int i = 0 ; i < m ; i++){
-        int x = edg[i].second.first , y = edg[i].second.second;
-        int z = edg[i].first;
-        if(id[x] == id[y]) val[id[x]]+=z;
-        else{
-            adj2[id[x]].push_back({id[y],z});
-            adj2[id[y]].push_back({id[x],z});
+
+    int mn = LLONG_MAX;
+    for(int i = 0 ; i < 4 ; i++){
+        for(auto & x : r[i]){
+            auto it = lower_bound(all(l[i]),s-x);
+            if(it != l[i].end()) mn = min(mn , *it + x);
         }
     }
-    if(dfs(id[a],-1,0,id[b])) YES;
-    else NO;
-
+    if(mn == LLONG_MAX) cout<<"Impossible";
+    else cout<<mn<<ln;
 }
 
 signed main() {

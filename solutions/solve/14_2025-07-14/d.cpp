@@ -68,83 +68,58 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-const int N = 300005;
+const int N = 1005;
+const int M = 30005;
+struct edge{
+    int u,v,e;
+    edge(int u=0,int v=0,int e=0):u(u),v(v),e(e){};
+};
 vector<pair<int,int>> adj[N];
+edge id[M];
+
 int low[N],tin[N];
-bool is_bridge[N],is_arc[N];
+bool is_bridge[M];
 int timer = 0;
 void init(int n,int m){
     for(int i = 0 ; i < n ; i++){
-        is_arc[i] = false;
         adj[i].clear();
-        low[i] = 1e9; tin[i] = -1;
+        low[i] = 1e9; tin[i] =  -1;
     }
     for(int i = 0 ; i < m ; i++) is_bridge[i] = false;
     timer = 0;
 }
-void tarjain(int v,int p){
+vi path;
+bool tarjain(int v,int p,int en){
     low[v] = tin[v] = timer++;
-    int kids = 0;
+    bool ret = (v == en);
     for(auto [u,e] : adj[v]){
         if(e == p) continue;
         if(tin[u] != -1){ // back edge
             low[v] = min(low[v] , tin[u]);
             continue;
         }
-        tarjain(u,e); // tree edge
+        tarjain(u,e,en); // tree edge
+        path.push_back(u)   ;
         low[v] = min(low[v],low[u]);
         if(low[u] > tin[v]) is_bridge[e] = true;
-        if(p != -1 && low[u] >= tin[v]) is_arc[v] = true;
-        kids++;
     }
-    if(p == -1 && kids > 1) is_arc[v] = true;
-}
-
-
-pair<int, int> bfs(int start,int n) {
-    vector<int> dist(n, -1);
-    queue<int> q;
-    q.push(start);
-    dist[start] = 0;
-    int mx = 0;
-    int node = start;
-    while(!q.empty()){
-        auto cur = q.front(); q.pop();
-        for(auto [x,y] : adj[cur]){
-            if(dist[x] == -1){
-                dist[x] = dist[cur];
-                if(is_bridge[y]) dist[x]++;
-                if(dist[x] > mx){
-                    mx = dist[x];
-                    node = x;
-                }
-                q.push(x);
-            }
-        }
-    }
-    return {node,mx};
-}
-
-pair<int,int> getDiameter(int n) {
-    auto [u, _] = bfs(0,n);
-    auto [v, diameter] = bfs(u,n);
-    return {u,v};
+    return ret;
 }
 
 void solve(int test_case) {
     int n,m; cin>>n>>m;
-    init(n,m);
-    for(int i = 0;i<m;i++){
-        int x,y; cin>>x>>y; x--,y--;
-        adj[x].push_back({y,i});
-        adj[y].push_back({x,i});
-    }    
-    tarjain(0,-1);
- 
-    cout<<ln;
-    auto res = getDiameter(n);
-    cout<<res.first+1<<" "<<res.second+1<<ln;
+    int s,t; cin>>s>>t; s--,t--;
+    for(int i = 0 ; i < m ; i++){
+        int x,y,z; cin>>x>>y>>z; x--,y--;
+        if(x == y) continue;
+        id[i] = {x,y,z};
+        adj[x].push_back({y,z});
+        adj[y].push_back({x,z});
+    }
+    // get path from s to t 
+    // try to del if there is no path return 
+    // else minimize cost
+
 }
 
 signed main() {
@@ -153,8 +128,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

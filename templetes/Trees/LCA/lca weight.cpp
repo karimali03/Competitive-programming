@@ -1,5 +1,4 @@
 const int N = 200005;
-int dp1[N],cnt[N],dp2[N];
 vector<pair<int,int>>adj[N];
 const int LOG = 17;
 int up[N][LOG];

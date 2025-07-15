@@ -68,69 +68,100 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+const int N = 20;
+int v[N];
+int n;
+int dp[1<<N];
+vector<int> adj2[N];
+vector<int>adj[1<<N][N];
+const int LOG = 5;
+int up[1<<N][N][LOG];
+int lvl[1<<N][N];
 
 
-const int N = 300005;
-vector<int> adj[N];
-int tin[N], low[N], timer;
-int comp[N], comp_cnt;
-stack<int> st;
-bool on_stack[N];
-
-void init(int n) {
-    for (int i = 0; i < n; i++) {
-        adj[i].clear();
-        tin[i] = low[i] = -1;
-        comp[i] = -1;
-        on_stack[i] = false;
-    }
-    while (!st.empty()) st.pop();
-    timer = comp_cnt = 0;
-}
-
-void dfs(int v) {
-    tin[v] = low[v] = timer++;
-    st.push(v);
-    on_stack[v] = true;
-
-    for (int u : adj[v]) {
-        if (tin[u] == -1) {
-            dfs(u);
-            low[v] = min(low[v], low[u]);
-        } else if (on_stack[u]) {
-            low[v] = min(low[v], tin[u]);
+void init(int n,int mask){
+    for (int i = 0; i < n; ++i) {
+        adj[mask][i].clear();
+        lvl[mask][i] = 0;
+        for (int j = 0; j < LOG; ++j) {
+            up[mask][i][j] = 0;
         }
-    }
-
-    if (low[v] == tin[v]) {
-        while (true) {
-            int u = st.top(); st.pop();
-            comp[u] = comp_cnt;
-            on_stack[u] = false;
-            if (u == v) break;
-        }
-        comp_cnt++;
     }
 }
 
+void dfs(int v,int p,int mask){
+    for(auto to : adj[mask][v]){
+        if(to == p) continue;
+        lvl[mask][to] = lvl[mask][v] + 1;
+        up[mask][to][0] = v;
+        for(int j = 1 ; j < LOG; j++){
+            up[mask][to][j] = up[mask][up[mask][to][j-1]][j-1];
+        }
+        dfs(to,v,mask);
+    }
+}   
 
+void build(int root,int mask){
+    lvl[mask][root] = 0;
+    up[mask][root][0] = root;
+    for (int j = 1; j < LOG; ++j) {
+            up[mask][root][j] = root;
+    }
+    dfs(root,-1 , mask);
+}
 
+int lca(int u,int v,int mask){
+    if (lvl[mask][u] < lvl[mask][v]) swap(u, v);
+    int diff = lvl[mask][u] - lvl[mask][v];
+    for (int j = LOG - 1; j >= 0; --j)
+            if ((diff >> j) & 1)  u = up[mask][u][j];
+    if (u == v) return u;
+    for (int j = LOG - 1; j >= 0; --j)
+        if (up[mask][u][j] != up[mask][v][j]) {
+            u = up[mask][u][j];
+            v = up[mask][v][j];
+        }
+    return up[mask][u][0];   
+}
 
+void link(int v,int p,int last,int mask){
+    if(!((mask>>v)&1ll)) last = v;
+    for(auto it : adj2[v]){
+        if(it == p) continue;
+        if(!((mask>>it)&1)) adj[mask][last].push_back(it);
+        link(it,v,last,mask);
+    }
+}
+
+int rec(int mask){
+    if(co(mask) >= n-1) return 0;
+    int &ret = dp[mask];
+    if(~ret) return ret;
+    init(n,mask);
+    link(0,-1,0,mask);
+    build(0,mask);
+    ret = 1e18;
+    for(int i = 0 ; i < n ; i++){
+        if( ((mask>>i)&1) || (i == 0 && co(mask) < n-2)) continue;
+        for(int j = i+1 ; j < n ; j++){
+            if( ((mask>>j)&1) ) continue;
+            int new_mask = ((mask | (1<<i)) | (1<<j));
+            int cost = v[lca(i,j,mask)];
+            ret = min(ret , cost + rec(new_mask));
+        }
+    }
+    return ret;
+}
 void solve(int test_case) {
-    int n,m; cin>>n>>m;
-    init(n);
-    for(int i=0;i<m;i++){
-        int x,y; cin>>x>>y;  x--,y--;
-        adj[x].push_back(y);
+    cin>>n;
+    memset(dp,-1,sizeof(dp));
+    f(i,0,n) cin>>v[i];
+    for(int i = 0 ;i  < n-1;i++){
+        int x,y; cin>>x>>y; x--,y--;
+        adj2[x].push_back(y);
+        adj2[y].push_back(x);
     }
-
-    for(int i = 0 ; i  < n ;i++){
-        if(tin[i]==-1) dfs(i);
-    } 
-    cout<<comp_cnt<<ln;
-    for(int i = 0 ;i  < n ; i++) cout<<comp[i]+1<<" ";
-    cout<<ln;
-  
+    cout<<rec(0)<<ln;
 }
 
 signed main() {
@@ -139,7 +170,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-  
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

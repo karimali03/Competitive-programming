@@ -10,7 +10,7 @@ int mul(int a, int b) {
 
 int fast_power(int a,int b){
     int res=1;
-    while(b){
+    while(b > 0){
         if(b&1) res = mul(a,res);
         a =mul(a,a);
         b/=2;

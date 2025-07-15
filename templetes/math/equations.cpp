@@ -1,5 +1,3 @@
-#include <cmath>
-
 // Sum from 1 to n: n * (n + 1) / 2
 long long sum1ToN(int n) {
     return 1LL * n * (n + 1) / 2;
