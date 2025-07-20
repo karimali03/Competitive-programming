@@ -1,7 +1,7 @@
 vector<int> NGE(vector<int> &v){
     int n = v.size();
     stack<int>st;
-    vector<int>res(n,-1);
+    vector<int>res(n,n);
     for(int i = 0 ; i < n ; i++){
         while(!st.empty() && v[st.top()] < v[i]){ // > for NSE
             res[st.top()] = i; st.pop();
@@ -27,7 +27,7 @@ vector<int> PGE(vector<int> &v){
 
 vector<int> kth_NGE(vector<int> &v , int k){
     int n = v.size();
-    vector<int>res(n,-1);
+    vector<int>res(n,n);
     vector<stack<int>>st(k);
     for(int i = 0 ; i <  n ;i++){
         for(int j = k-1 ; j >= 0 ;j--){
