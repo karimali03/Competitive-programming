@@ -3,8 +3,8 @@
 cbabc
 babca
 abcaa
-1
-a
+3
+abc
 4 5
 aabcd
 bbzzz
