@@ -16,13 +16,12 @@ vector<int>prime(N,1);
 vector<int>primes;
  void sieve(){    // Sieve algorithm O(n*log(log(n)))
 
- for(int i=2;i*i<=N;i++){
-    if(prime[i])  
-	  for(int j=i*i;j<=N;j+=i)    prime[j]=0;    
+  for(int i=2;i*i<=N;i++){
+            if(prime[i])  
+            for(int j=i*i;j<=N;j+=i)    prime[j]=0;    
    }
     for(int i=2;i<=N;i++) if(prime[i]) primes.push_back(i);   
-
-     }       
+}       
 
 
 // spf ( smallest prime factor )

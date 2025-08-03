@@ -1,9 +1,21 @@
+/*
+ Index-to-Block:
+   - block_id = idx / block_size
+ Block-to-Index:
+   - block_start = block_id * block_size
+   - block_end = min(n - 1, (block_id + 1) * block_size - 1)
+*/
 struct Sqrt {
 	int block_size;
 	vector<int> nums;
 	vector<long long> blocks;
+	int n;
+        pair<int,int> block_rng(int block){
+            return {block * block_size , min( n , (block+1) * block_size)};
+        }
 	Sqrt(int sqrtn, vector<int> &arr) : block_size(sqrtn), blocks(sqrtn, 0) {
 		nums = arr;
+		n = nums.size();
 		for (int i = 0; i < nums.size(); i++) { blocks[i / block_size] += nums[i]; }
 	}
 

@@ -37,9 +37,37 @@ int catalan(int n) {
     return res;
 }
 
-// Stars and Bars: number of ways to divide n identical items into k parts (with empty parts)
-int starsAndBars(int n, int k) {
-    if (n < 0 || k <= 0) return 0;
-    return nCr(n + k - 1, k - 1);
+// 1. Identical balls, distinct boxes, empty allowed
+int starsAndBars(int balls, int boxes) {
+    if (balls < 0 || boxes <= 0) return 0;
+    return nCr(balls + boxes - 1, boxes - 1);
 }
+
+// 2. Identical balls, distinct boxes, NO empty boxes
+int starsAndBarsNoEmpty(int balls, int boxes) {
+    if (balls < boxes || boxes <= 0) return 0;
+    return nCr(balls - 1, boxes - 1);
+}
+
+// 3. Identical balls, distinct boxes, each box gets AT LEAST L balls
+int starsAndBarsLowerBound(int balls, int boxes, int L) {
+    int adjusted = balls - L * boxes;
+    if (adjusted < 0) return 0;
+    return nCr(adjusted + boxes - 1, boxes - 1);
+}
+
+// 4. Identical balls, distinct boxes, each box gets [L, R] balls (harder)
+int starsAndBarsBounds(int balls, int boxes, int L, int R) {
+    // Inclusion-exclusion over max bound R
+    int res = 0;
+    for (int i = 0; i <= boxes; i++) {
+        int sign = (i & 1) ? -1 : 1;
+        int val = balls - boxes * L - i * (R - L + 1);
+        if (val < 0) break;
+        int ways = 1LL * nCr(boxes, i) * nCr(val + boxes - 1, boxes - 1) % MOD;
+        res = (res + sign * ways + MOD) % MOD;
+    }
+    return res;
+}
+
 

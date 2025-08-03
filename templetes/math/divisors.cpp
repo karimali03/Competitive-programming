@@ -55,8 +55,7 @@ number with max number of divisors is called HCN
 | >= 10^9$ | 1344 | 735134400                |
 if you're dividing something (e.g., grid, people, blocks), HCNs make ideal candidates since they divide easily due to many factors.
 */
-
-  /*
+/*
         Divisbility Rules :
 
         Number is divisible by 2 if last digit equal 0,2,4,6,8
@@ -81,4 +80,4 @@ if you're dividing something (e.g., grid, people, blocks), HCNs make ideal candi
 
         Number is divisible by 12 if it is divisible by 3 and 4
 
-        */
+*/

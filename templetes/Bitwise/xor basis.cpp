@@ -4,13 +4,19 @@
 // 3. You're trying to count how many distinct values can be formed by XORs
 // 4. You're given operations that are reversible via XOR (flip i and j, toggle paths, etc.)
 // 5. You want the minimal representation of reachable XOR values
-
+/*
+Any set of more than k numbers in which all numbers are in the range 
+that can be represented using at most k bits, 
+must contain a subset with XOR = 0.
+k+1 number -> xor zero
+*/
 struct XorBasis {
     static const int BITS = 64; // use 30 for 1e9 values, 64 for full long long
     long long basis[BITS] = {}; // basis[i] has the vector with i-th bit as the highest set
-
+    int inserted = 0;
     // Insert a number into the basis
     void insert(long long x) {
+        inserted++;
         for (int i = BITS - 1; i >= 0; --i) {
             if (!(x & (1LL << i))) continue;
             if (!basis[i]) {
@@ -38,6 +44,11 @@ struct XorBasis {
         for (int i = 0; i < BITS; ++i)
             res += (basis[i] != 0);
         return res;
+    }
+    
+    // xor zero non empty 
+    bool XrZero() const {
+        return size() < inserted;
     }
 };
 

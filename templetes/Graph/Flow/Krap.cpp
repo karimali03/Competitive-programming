@@ -6,6 +6,7 @@ A **maximum matching** is the largest such set.
 Size of Maximum Matching == Size of Minimum Vertex Cover
 "Maximize pairings without overlap"  → Maximum Matching
 "Cover all edges with fewest nodes" → Minimum Vertex Cover
+-- one indexed
 */
 
 struct HopcroftKarp {

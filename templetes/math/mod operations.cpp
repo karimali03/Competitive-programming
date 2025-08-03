@@ -8,11 +8,11 @@ int mul(int a, int b) {
     return ((a % mod) * (b % mod)) % mod;
 }
 
-int fast_power(int a,int b){
+int fp(int a,int b){
     int res=1;
     while(b > 0){
-        if(b&1) res = mul(a,res);
-        a =mul(a,a);
+        if(b&1) res = a * res % mod;
+        a = a * a % mod;
         b/=2;
     }
 
