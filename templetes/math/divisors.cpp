@@ -12,7 +12,6 @@ vector<int> divisiors(int n){ // O( sqrt(n) )
 
 
 // get divisors form factorization
-
 vector<pair<int,int>>v;  // {prime,count}
 vector<int>divisors;
 void get_divisors(int idx ,int val=1){  // O ( n^(1/3) )
