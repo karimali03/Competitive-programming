@@ -68,54 +68,53 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
 
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
-}
-void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+struct dsu {
+    vector<int> size, par;
+    int cc;
+
+    dsu(int n) : cc(n), size(n, 1), par(n) {
+        for (int i = 0; i < n; i++) par[i] = i;
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        return par[x] = get(par[x]);
+    }
+
+    bool merge(int x, int y) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        if (size[x] > size[y]) swap(x, y);
+        par[x] = y;
+        size[y] += size[x];
+        cc--;
+        return true;
+    }
+
+};
+
+void solve(int test_case) {
+    int n,m,k; cin>>n>>m>>k;
+    dsu st(n);
+    vector<array<int,3>>edg(m);
+    for(int i = 0 ; i < m ; i++){
+        int x,y,z; cin>>x>>y>>z; x--,y--;
+        edg[i] = {z,x,y};
+    }
+    sort(all(edg));
+    vector<int>use;
+    for(int i = m-1 ; i >= 0 ; i--) if(edg[i][0] <= k && st.merge(edg[i][1],edg[i][2])) use.push_back(edg[i][0]);
+    for(int i = 0 ; i < m ; i++) if(st.merge(edg[i][1],edg[i][2])) use.push_back(edg[i][0]);
+    int cost = -1;
+    for(int i = m-1 ; i >= 0 ; i--) if(edg[i][0] >= k) cost = edg[i][0];
+    int res = 0;
+    sort(all(use));
+    if(cost != -1 && use.back() < k && abs(k-use.back()) > abs(k-cost)) use.push_back(cost);
+    if(use.back() < k) res += k - use.back();
+    else for(auto it : use) if(it > k) res += it-k;
+    cout<<res<<ln;
 }
 
 signed main() {
@@ -124,7 +123,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -2,8 +2,8 @@ struct dsu {
     vector<int> size, par;
     int cc;
 
-    dsu(int n) : cc(n), size(n + 1, 1), par(n + 1) {
-        for (int i = 0; i <= n; i++) par[i] = i;
+    dsu(int n) : cc(n), size(n, 1), par(n) {
+        for (int i = 0; i < n; i++) par[i] = i;
     }
 
     int get(int x) {

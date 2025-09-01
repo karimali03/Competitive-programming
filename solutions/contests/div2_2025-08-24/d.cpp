@@ -68,54 +68,24 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
-
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
-}
 void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    vi dp(n+1,1e10);
+    dp[n-1] = v[n-1]; dp[n] = 0;
+    vi pref(n+1);
+    pref[0] = v[0];
+    for(int i = 1 ; i < n;  i++) pref[i] = pref[i-1] + v[i];
+    int mn = -1;
+    for(int i = n-2 ; i >= 0 ; i--){
+        dp[i] = v[i] + dp[i+1];
+        int sum = max(0ll , v[i+1] - i - 1);
+        dp[i] = min(dp[i] , v[i] + sum + dp[i+2]);
+        if(i != n-2)dp[i] = min(dp[i] , v[i] + i + 1 + sum - pref[i+1] + mn);
+        if(i == n-2) mn = pref[i+1] - (i+1) + dp[i+2];
+        else mn = min(mn , pref[i+1] - (i+1) + dp[i+2] );
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+    cout<<dp[0]<<ln;
 }
 
 signed main() {
@@ -124,7 +94,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

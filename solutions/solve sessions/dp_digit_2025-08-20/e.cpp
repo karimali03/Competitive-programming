@@ -68,54 +68,30 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
+const int N = 18;
+int dp[1<<N][N+1];
 
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
+void solve(int test_case) {
+    int n,m,k; cin>>n>>m>>k;
+    vi v(n); cin>>v;
+    vii c(n+1,vi(n+1));
+    for(int i = 0 ;i  < k; i++){
+        int x,y,z; cin>>x>>y>>z; x--,y--;
+        c[x][y] = z;
+    }
+    memset(dp,-1,sizeof(dp));
+    function<int(int,int)> rec = [&](int mask,int prv) -> int{
+        int &ret = dp[mask][prv];
+        if(~ret) return ret;
+        if(co(mask) == m) return ret = 0;
         ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
+        for(int i = 0 ; i < n ; i++){
+            if((mask>>i)&1) continue;
+            ret = max(ret , rec(mask |(1<<i) , i) + c[prv][i] + v[i]);
         }
         return ret;
-}
-void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
-    }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+    };
+    cout<<rec(0,n)<<ln;
 }
 
 signed main() {
@@ -124,7 +100,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    
+
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

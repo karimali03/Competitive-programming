@@ -67,55 +67,93 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
-
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
+const int N = 200005;
+vector<pair<int,int>> adj[N];
+int low[N],tin[N];
+bool is_bridge[N];
+int timer = 0;
+void init(int n,int m){
+    for(int i = 0 ; i < n ; i++){
+        adj[i].clear();
+        low[i] = 1e9; tin[i] = -1;
     }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
-
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
+    for(int i = 0 ; i < m ; i++) is_bridge[i] = false;
+    timer = 0;
+}
+void tarjain(int v,int p){ // replace p with e is there are multi edges between two nodes
+    low[v] = tin[v] = timer++;
+    for(auto [u,e] : adj[v]){ 
+        if(u == p) continue;
+        if(tin[u] != -1){ // back edge 
+            low[v] = min(low[v] , tin[u]);
+            continue;
         }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
+        tarjain(u,v); // tree edge 
+        low[v] = min(low[v],low[u]);
+        if(low[u] > tin[v]) is_bridge[e] = true;
+    }
+  
 }
 void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+    int n,m; cin>>n>>m;
+    init(n,m);
+    vii v(m);
+    vi seen(n);
+    for(int i = 0 ;i  < m ; i++){
+        int x,y; cin>>x>>y; x--,y--;
+        adj[x].push_back({y,i});
+        adj[y].push_back({x,i});
+        v[i].push_back(x); v[i].push_back(y);
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+    tarjain(0,-1);
+    set<int> brid;
+    vi seen2(n);
+    function<bool(int)> dfs = [&](int i) -> bool {
+        if(seen2[i] != 0) return seen2[i] == 1;
+        if(i == n-1) return seen2[i] = 1;
+        seen2[i] = -1; 
+        for(auto [a, _] : adj[i]){
+            if(seen2[a] == -1) continue; 
+            if(dfs(a)){
+                if(is_bridge[_]) brid.insert(_);
+                seen2[i] = 1;
+            } 
+        }
+        return seen2[i];
+    };
+    dfs(0);
+    for(int i = 0 ;i  < m; i++) is_bridge[i] = false;
+    priority_queue<pair<pair<int,int>,int>,vector<pair<pair<int,int>,int>>,greater<>>q;
+    for(auto it : brid){
+        is_bridge[it] = true;
+        for(auto x : v[it]){
+            q.push({{0,it},x}); 
+        }
+    }
+    vi res(n,-1);
+    while (!q.empty()){
+        auto [b,a] = q.top(); q.pop();
+        if(res[a] != -1) continue;
+     //   cout<<a+1<<" "<<b+1<<ln;
+        res[a] = b.second;
+        for(auto [x,y] : adj[a]){
+            if(res[x] != -1) continue;
+            q.push({{b.first+1,b.second},x});
+        }
+    }
+    int sz; cin>>sz;
+    vi qu(sz); cin>>qu;
+    bool vld = false;
+    for(int i = 0; i < m ; i++) vld|=is_bridge[i];
+    if(!vld){
+        NA; return;
+    }
+    for(auto it : qu){
+        cout<<res[it-1]+1<<" ";
+    }
+    cout<<ln;
+    
+
 }
 
 signed main() {
@@ -124,7 +162,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -68,63 +68,65 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
-
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
+int ask(int st,vector<int> & v){
+    int sz = v.size();
+    cout<<"? "<<st+1<<" "<<sz<<" ";
+    for(auto it : v){
+        cout<<it+1<<" ";
+    } 
+    cout<<"\n";
+    cout.flush();
+    int ret; cin>>ret;
+    assert(ret != -1);
+    return ret;
 }
+
+void answer(vector<int>&path){
+    cout<<"! "<<(int)path.size()<<" ";
+    for(auto it : path){
+        cout<<it+1<<" ";
+    } 
+    cout<<"\n";
+    cout.flush();
+}
+
 void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+    int n; cin>>n;
+    vi dp(n);
+    vector<int>v(n);
+    f(i,0,n) v[i] = i;
+    f(i,0,n) dp[i] = ask(i,v);
+    vi path;
+    int mx = *max_element(all(dp));
+    for(int i = 0 ;i  < n ; i++){
+        if(dp[i] == mx){
+            path.push_back(i);
+            break;
+        }
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+
+    int cur = dp[path.back()] - 1;
+    while(cur > 0){
+        for(int i = 0 ;i  <  n; i++){
+            if(dp[i] == cur){
+                vector<int> temp = {i , path.back()};
+                int ret = ask(path.back(),temp);
+                if(ret == 2){
+                    path.push_back(i);
+                    break;
+                }
+            }
+        }
+        cur--;
+    }
+   answer(path);
 }
 
 signed main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cout.tie(nullptr);
+   
 
     int t = 1;
-    
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

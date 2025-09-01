@@ -68,54 +68,60 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
 
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
-}
-void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+string a,b;
+ll dp[20][2][2][2];
+// pos, tight left, tight right ,started, property
+// 0 , 1 , 1 , 0 , ----
+ll rec(int pos, bool tl,bool tr,bool st) {
+    if (pos == (int)b.size()) return 1;
+    ll &ret = dp[pos][tl][tr][st];
+    if (~ret) return ret;
+    ret = 0;
+
+    int l = (tl ? a[pos] - '0' : 0);
+    int r = (tr ? b[pos] - '0' : 9);
+    for (int d = l; d <= r; d++) {
+        bool ns = st || (d != 0);
+        ret = max(ret , rec(pos + 1, tl && (d == l), ns , tr && (d == r)));
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
+    return ret;
+}
+
+int dp_digit(int l,int r){
+    a = to_string(l);
+    b = to_string(r);
+    while (a.size() < b.size()) a = '0' + a;
     memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+    return rec(0,1,1,0);
+}
+
+void solve(int test_case) {
+    cin>>a>>b;
+    while (a.size() < b.size()) a = '0' + a;
+    memset(dp,-1,sizeof(dp));
+    string res;
+    function<void(int,bool,bool,bool)> build = [&](int pos,bool tight,bool started,bool tight2){
+        if (pos == (int)b.size()) return ;
+        int opt = rec(pos,tight,started,tight2);
+        int r = (tight ? b[pos] - '0' : 9);
+        int l = (tight2 ? a[pos] - '0' : 0);
+        for (int d = l; d <= r; d++) {
+            bool newStarted = started || (d != 0);
+            int val = (newStarted ? d : 1) * rec(pos + 1, tight && (d == r), newStarted , tight2 && (d == l));
+            if(opt == val){
+                res.push_back(d+'0');
+                build(pos + 1, tight && (d == r), newStarted , tight2 && (d == l));
+                return;
+            }
+        }
+    };
+    build(0,1,0,1);
+    reverse(all(res));
+    while (res.back() == '0') res.pop_back();
+    reverse(all(res));
+    cout<<res<<ln;
+    
 }
 
 signed main() {
@@ -124,7 +130,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

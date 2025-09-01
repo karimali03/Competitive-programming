@@ -68,63 +68,53 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-struct d {
-    int aud;
-    vi b;
-    d(int p = 0):b(p){};
-    bool operator < (const d& rhs) const {
-        return aud < rhs.aud;
-    }
-};
-const int N = 100005;
-int dp[N][1<<7];
-d v[N];
-int pre[N];
-int n,p,k;
 
-int rec(int i,int mask){
-     int &ret = dp[i][mask];
-     if(~ret) return ret;
-      
-      int rem = max(0ll , k - i + co(mask));
-        if(co(mask) == p){
-            ret = pre[i+rem-1] - (i ? pre[i-1] : 0);
-            return ret;
-        }
-     
-        ret = 0;
-        int last = p - co(mask) + max(0ll,rem-1);
-        if(n-i-1 >= last)
-        ret = (rem > 0 ? v[i].aud: 0) + rec(i+1,mask);
-        for(int j = 0 ; j  < p ; j++){
-            if((mask>>j)&1) continue;
-            ret = max(ret , v[i].b[j] + rec(i+1,(mask|(1<<j))) );
-        }
-        return ret;
-}
-void solve(int test_case) {
-    cin>>n>>p>>k;
-    for(int i = 0 ;i < n ; i++) cin>>v[i].aud;
-    for(int i = 0 ;i < n ; i++){
-        v[i].b = vi(p);
-        cin>>v[i].b;
+const int N=2e7+5;
+
+vector<int>prime(N,1);
+vector<int>primes;
+ void sieve(){    // Sieve algorithm O(n*log(log(n)))
+
+  for(int i=2;i*i<=N;i++){
+            if(prime[i])  
+            for(int j=i*i;j<=N;j+=i)    prime[j]=0;    
+   }
+    for(int i=2;i<=N;i++) if(prime[i]) primes.push_back(i);   
+}     
+
+void solve(int test_case) {   
+    int n,k; cin>>n>>k;
+    vi v(n); cin>>v;
+    if(k&1){
+        for(int i  =0 ; i < n ; i++) if(v[i]&1) v[i]+=k;
+        f(i,0,n) cout<<v[i]<<" ";
+        cout<<ln;
+        return;
     }
-    sort(v,v+n);
-    reverse(v,v+n);
-    pre[0] = v[0].aud;
-    for(int i = 1 ; i < n ; i++) pre[i] = pre[i-1] + v[i].aud;
-    memset(dp,-1,sizeof(dp));
-   
-    cout<<rec(0,0)<<ln;
+    int num = 3;
+    for(auto it : primes){
+        if(k%it != 0){
+            num = it; break;
+        }
+    }
+    for(int i = 0 ; i < n ; i++){
+        while(v[i]%num){
+            v[i]+=k;
+        }
+    }
+
+    f(i,0,n) cout<<v[i]<<" ";
+    cout<<ln;
+
 }
 
 signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
-
+    sieve();
     int t = 1;
-    
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
