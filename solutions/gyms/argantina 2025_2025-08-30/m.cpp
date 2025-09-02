@@ -68,64 +68,46 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
-string digits;
-pair<int,int> dp[20][2][2][1<<10];
-// pos, tight, started, property
-int x;
-const int mod = 998244353;
-int add(int a, int b) {
-    return ((a % mod) + (b % mod)) % mod;
-}
-
-int mul(int a, int b) {
-    return ((a % mod) * (b % mod)) % mod;
-}
-
-int fp(int a,int b){
-    int res=1;
-    while(b > 0){
-        if(b&1) res = mul(a,res);
-        a = mul(a,a) % mod;
-        b/=2;
-    }    
-    return res;
-}    
-
-
-int val(int pos,int d){
-    int pw = (int)digits.size() - pos - 1;
-    return mul(fp(10,pw) , d);
-}
-pair<int,int> rec(int pos, bool tight, bool started, int mask) {
-    if (pos == (int)digits.size()) return  {started,0};
-    auto &res = dp[pos][tight][started][mask];
-    if (~res.first) return res;
-    res = {0,0};
-    int limit = (tight ? digits[pos] - '0' : 9);
-
-    for (int d = 0; d <= limit; d++) {
-        bool newStarted = started || (d != 0);
-        if(newStarted && !((mask>>d)&1) && co(mask) == x) continue;
-        auto ret = rec(pos+1,tight&&(d==limit),newStarted,newStarted?(mask|(1<<d)):0);
-        res.second = add(res.second , add(ret.second , mul(val(pos,d),ret.first)));
-        res.first = add(res.first , ret.first);
-    }
-    return res;
-}
-
+const int MOD = 998244353;
 void solve(int test_case) {
-    int l,r,k; cin>>l>>r>>k;
-    digits = to_string(r);
-    x = k;
-    memset(dp,-1,sizeof(dp));
-    auto res = rec(0,1,0,0);
-    digits = to_string(l-1);
-    memset(dp,-1,sizeof(dp));
-    auto res2 = rec(0,1,0,0);
-    int ans = (res.second - res2.second + mod)%mod;
-    cout<<ans<<ln;
+    int n,m,k; cin>>n>>m>>k;
+    vii adj(n);
+    for(int i = 0; i < m ; i++){
+        int x,y; cin>>x>>y; x--,y--;
+        adj[x].push_back(y);
+        adj[y].push_back(x);
+    }
+    auto bfs = [&](int src) -> int{
+        queue<int>q; q.push(src);
+        vi dist(n,-1);
+        dist[src] = 0;
+        while (!q.empty()){
+            auto cur = q.front(); q.pop();
+            if(cur == 1) return dist[cur];
+            for(auto it : adj[cur]){
+                if(dist[it] != -1) continue;
+                dist[it] = 1 + dist[cur];
+                q.push(it);
+            }
+        }
+        return 0;
+    };
+
+    int d = bfs(0);
+    int days = (d + k - 1) / k;
+    viii dp(days,vii(k+1,vi(n,-1)));
+    function<int(int,int,int)> rec = [&](int day,int rem,int node) -> int{
+        if(day == days) return (node == 1);
+        int &ret = dp[day][rem][node];
+        if(~ret) return ret;
+        ret = rec(day+1,k,node);
+        if(!rem) return ret;
+        for(auto it : adj[node]){
+            (ret += rec(day,rem-1,it))%=MOD;
+        }
+        return ret;
+    };
+    cout<<rec(0,k,0)<<ln;
 }
 
 signed main() {
@@ -134,6 +116,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

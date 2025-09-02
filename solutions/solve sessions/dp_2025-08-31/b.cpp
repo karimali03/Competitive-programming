@@ -68,54 +68,21 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
-string digits;
-ll dp[12][2][2][25205][10];
-// pos, tight, started, property
-int x;
-ll rec(int pos, bool tight, bool started, int lm,int prv) {
-    if (pos == (int)digits.size()){
-        if(prv != 0) lm = lcm(lm,prv);
-        return (lm == x && started);
-    } 
-    ll &res = dp[pos][tight][started][lm][prv];
-    if (~res) return res;
-    res = 0;
-    int limit = (tight ? digits[pos] - '0' : 9);
-
-    for (int d = 0; d <= limit; d++) {
-        bool newStarted = started || (d != 0);
-        if(started && prv == 0 && d == 0) continue;
-        int new_lm = lm;
-        if(started){
-            new_lm = prv == 0 ? lm : lcm(lm , prv);
-            if(d == 0) new_lm = lcm(lm , prv*10);
-        }
-        res += rec(pos + 1,
-                       tight && (d == limit),
-                       newStarted,
-                       new_lm,d);
-    }
-    return res;
-}
-
+const int MOD = 1e9+7;
 void solve(int test_case) {
-    int l,r,k; cin>>l>>r>>k;
-    if(k > 25200){
-        cout<<0<<ln;
-        return;
-    }
- 
-    memset(dp,-1,sizeof(dp));
-    digits = to_string(r);
-    x = k;
-    int res = rec(0,1,0,1,0);
-   
-    digits = to_string(l-1);
-    memset(dp,-1,sizeof(dp));
-    res-= rec(0,1,0,1,0);
-    cout<<res<<ln;
+    int n,k; cin>>n>>k;
+    vi v(n); cin>>v;
+    vii dp(n+1,vi(k+1));
+    dp[n][0] = 1;
+    for(int i = n-1 ; i >= 0 ; i--){
+        for(int x=1;x<=k;x++) (dp[i+1][x] += dp[i+1][x-1])%=MOD;
+        for(int rem = 0 ; rem <= k ; rem++){
+            int l = max(0ll , rem - v[i]);
+            int r= rem;
+            (dp[i][rem] += dp[i+1][r] - (l ? dp[i+1][l-1] : 0) + MOD)%=MOD;
+        }
+    }   
+    cout<<dp[0][k]<<ln;
 }
 
 signed main() {
@@ -124,7 +91,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-   
+    
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
