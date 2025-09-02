@@ -33,25 +33,26 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-const int N = 505;
-int dp[N][N];
+
+const int MOD = 998244353;
 void solve(int test_case) {
-    int n; cin>>n;
-    string s; cin>>s;
-    memset(dp,-1,sizeof(dp));
-    function<int(int,int)> rec = [&](int l,int r) -> int{
-        if(l > r) return 0;
-        if(l == r) return 1;
-        int &ret = dp[l][r];
-        if(~ret) return ret;
-        ret = 1 + rec(l+1,r);
-        for(int i = l+1 ; i <= r ; i++){
-            if(s[l] == s[i])
-            ret = min(ret , rec(l+1,i-1) + rec(i,r));
+    int n,k; cin>>n>>k;
+    vi sums(n+1);
+    vi res(n+1);
+    vi dp(n);
+    dp[0] = 1;
+    for(int x = k ; x < 500 ; x++){
+        vi new_dp(n);
+        for(int i = 1 ; i <= n ; i++){
+            (sums[(i-1)%(k+x-1)] += dp[i-1])%=MOD;
+            new_dp[i] = sums[i%(k+x-1)];
+            (res[i] += new_dp[i])%=MOD;
         }
-        return ret;
-    };
-    cout<<rec(0,n-1)<<ln;
+        dp = new_dp;
+        for(int i = 0 ; i <= n ; i++) sums[i] = 0;
+    }
+    for(int i = 1 ; i <= n ;i++) cout<<res[i]<<" ";
+    cout<<ln;
 }
 
 signed main() {
@@ -60,9 +61,8 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
     for (int i = 1; i <= t; i++) {
-        solve(i);
+         solve(i);
     }
 
     return 0;

@@ -33,26 +33,29 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-const int N = 505;
-int dp[N][N];
+const int N = 3005;
+int dp[N][N]{};
+
+const int MOD = 1e9+7;
 void solve(int test_case) {
     int n; cin>>n;
     string s; cin>>s;
-    memset(dp,-1,sizeof(dp));
-    function<int(int,int)> rec = [&](int l,int r) -> int{
-        if(l > r) return 0;
-        if(l == r) return 1;
-        int &ret = dp[l][r];
-        if(~ret) return ret;
-        ret = 1 + rec(l+1,r);
-        for(int i = l+1 ; i <= r ; i++){
-            if(s[l] == s[i])
-            ret = min(ret , rec(l+1,i-1) + rec(i,r));
+    dp[0][1] = 1;
+    for(int i = 1 ; i < n ; i++){
+        for(int x = 1 ; x < n ; x++) (dp[i-1][x] += dp[i-1][x-1])%=MOD;
+        for(int prv = 1 ; prv <= i+1 ; prv++){
+            if(s[i-1] == '<'){
+                dp[i][prv] = (dp[i-1][prv-1] - dp[i-1][0] + MOD)%MOD;
+            }else{
+                dp[i][prv] = (dp[i-1][i] - dp[i-1][prv-1] + MOD)%MOD;
+            }
         }
-        return ret;
-    };
-    cout<<rec(0,n-1)<<ln;
+    }
+    int res = 0;
+    for(int i = 1 ; i <= n ; i++) (res+=dp[n-1][i])%=MOD;
+    cout<<res<<ln;
 }
+
 
 signed main() {
     ios_base::sync_with_stdio(false);
