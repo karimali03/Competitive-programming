@@ -33,24 +33,8 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-const int MOD = 998244353;
-const int N = 300005;
-int dp[N]{},res[N]{};
 void solve(int test_case) {
-    int n,k; cin>>n>>k;
-    dp[0] = 1;
-    for(int x = k ; x <= n ; x += k++){
-        vector<int>sums(k+1);
-        for(int i = x-k ; i <= n ; i++){
-            int prv = dp[i];
-            dp[i] = sums[i%k];
-            (res[i] += dp[i])%=MOD;
-            (sums[i%k] += prv)%=MOD;
-        }
-    }
-    for(int i = 1 ; i <= n ;i++) cout<<res[i]<<" ";
-    cout<<ln;
+    
 }
 
 signed main() {
@@ -59,8 +43,9 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
-         solve(i);
+        solve(i);
     }
 
     return 0;
