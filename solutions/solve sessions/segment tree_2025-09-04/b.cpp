@@ -1,15 +1,69 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void solve(int test_case){
+#define ln "\n"
+#define ll long long
+#define ld long double
+#define ull unsigned long long
+#define vec vector
+#define vi vector<int>
+#define vii vector<vector<int>>
+#define viii vector<vector<vector<int>>>
+#define f(i, a, b) for(int i = a; i < b; i++)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
+#define co(x) __builtin_popcountll(x)
+#define ctz(x) __builtin_ctzll(x)
+#define clz(x) __builtin_clzll(x)
+#define PI acos(-1)
 
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
+
+template<typename T = int>
+istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v) in >> x;
+    return in;
 }
 
-int main() {
-    ios::sync_with_stdio(false);
+template<typename T = int>
+ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (const T &x : v) out << x << ' ';
+    return out;
+}
+
+
+#include <ext/pb_ds/assoc_container.hpp> 
+#include <ext/pb_ds/tree_policy.hpp> 
+using namespace __gnu_pbds; 
+
+#define ordered_set tree<int, null_type,less<int>, rb_tree_tag,tree_order_statistics_node_update>
+
+void solve(int test_case) {
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    ordered_set st;
+    f(i,0,n) st.insert(i);
+    for(int i = 0 ; i < n ; i++){
+        int x; cin>>x; x--;
+        cout<<v[*st.find_by_order(x)]<<" ";
+        st.erase(st.find_by_order(x));
+    }    
+    
+    
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
+    cout.tie(nullptr);
+
     int t = 1;
-    cin>>t;
-    for(int i = 1 ; i <= t ; i++) solve(t);
+
+    for (int i = 1; i <= t; i++) {
+        solve(i);
+    }
+
     return 0;
 }

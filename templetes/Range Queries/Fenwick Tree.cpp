@@ -1,26 +1,28 @@
-const int N=1e5+5;
 struct FenwickTree{
-    ll bit[N]={};
-    void add(int idx,ll val)
-    {
-        while(idx<N)
-        {
-            bit[idx]+=val;
+    static const int N = 1e6+5;
+    ll bit[N] {};
+
+    ll merge(int a,int b){
+        return a + b;
+    }
+    // 1 based , add val to idx
+    void add(int idx,ll val){
+        while( idx < N){
+            bit[idx] = merge(bit[idx] , val);
             idx+=idx&-idx;
         }
     }
-    ll query(int idx)
-    {
+    // from 1 to idx
+    ll query(int idx){
         ll ret=0;
-        while(idx>0)
-        {
-            ret+=bit[idx];
+        while(idx>0){
+            ret = merge(ret , bit[idx]);
             idx-=idx&-idx;
         }
         return ret;
     }
-    ll prefix(int l,int r)
-    {
+    // from l to r inclusive 
+    ll prefix(int l,int r){
         return query(r)-query(l-1);
     }
 };

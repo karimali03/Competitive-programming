@@ -9,8 +9,8 @@ struct SegmentTree {
     int sz;
     bool mx;
     SegmentTree(int size,bool mx):mx(mx){
+        sz = size;
         n = 1;
-        sz = n;
         if(mx) neutral = {INT32_MIN};
         else neutral = {INT32_MAX};
         while (n < size) n <<= 1;
@@ -52,20 +52,21 @@ struct SegmentTree {
         return query(l,r,0,0,sz-1);
     }
 
-    // Query 2: Conditional query in [l, r] (e.g., find first index with value <= lf)
+    // Query 2: Conditional query in [l, r] (e.g., find first index with value <= x)
     // Returns index or INT32_MAX if not found
-    pair<int,int> query_conditional(int l,int r,int lf,int v, int tl, int tr) {
+    pair<int,int> query2(int l,int r,int x,int v, int tl, int tr) {
         if (l > r || l > tr || r < tl) return {-1,-1}; // Out of segment
-        if (tree[v].val <= lf) return {-1,-1}; // Condition not met in this segment
+        if (tree[v].val < x) return {-1,-1}; // Condition not met in this segment
         if (tl == tr) return {tree[v].val,tl}; // Leaf node with condition met
         int tm = (tl + tr) / 2;
-        auto rh_res = query_conditional(max(l, tm + 1), r, lf,v * 2 + 2, tm + 1, tr);
-        if (rh_res.first != -1) return rh_res;
-        return  query_conditional(l, min(r, tm), lf,v * 2 + 1, tl, tm);
+        auto left = query2( l ,min(r,tm),x,v*2+1,tl,tm);
+        if (left.first != -1) return left;
+        auto right =  query2(max(l, tm + 1), r, x ,v * 2 + 2, tm + 1, tr);
+        return right;
     }
 
-    pair<int,int> query_conditional(int l,int r,int lf){
-        return query_conditional(l,r,lf,0,0,sz-1);
+    pair<int,int> query2(int l,int r,int x){
+        return query2(l,r,x,0,0,sz-1);
     }
 
     // Point update: set position pos to new_val

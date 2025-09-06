@@ -3,13 +3,16 @@ struct SegmentTree {
         int val;
     };
     
-    int n;
     vector<node> tree;
     vector<int> lazy;
     node neutral = {0};
     int no_operation = 0;
+    
+    int n;
+    int sz;
 
     SegmentTree(int size) {
+        sz = size;
         n = 1;
         while (n < size) n <<= 1;
         tree.resize(2 * n, neutral);
@@ -27,13 +30,13 @@ struct SegmentTree {
         }
         if (tl != tr) {
             if(lazy[v] != no_operation) { // propagate the lazy value to children
-                lazy[v * 2 + 1] += lazy[v];
-                lazy[v * 2 + 2] += lazy[v];
-            }
+                    lazy[v * 2 + 1] = lazy[v];
+                    lazy[v * 2 + 2] += lazy[v];
+                }
             push(v * 2 + 1, tl, (tl + tr) / 2 , deg-1); 
             push(v * 2 + 2, (tl + tr) / 2 + 1, tr , deg-1);
         }
-            lazy[v] = no_operation;
+        lazy[v] = no_operation;
     }
 
     void build(vector<int> &a, int v, int tl, int tr) {
@@ -47,7 +50,7 @@ struct SegmentTree {
         }
     }
     
-    void build(vector<bitset<20>> &a){
+    void build(vector<int> &a){
         build(a,0,0,sz-1);
     }
 
@@ -64,17 +67,17 @@ struct SegmentTree {
     node query(int l,int r){
         return query(0,0,sz-1,l,r);
     }
-
-    void update(int v, int tl, int tr, int l, int r, int addend) {
+    // set [l,r] to x
+    void update(int v, int tl, int tr, int l, int r, int x) {
         push(v, tl, tr);
         if (l > r) return;
         if (l == tl && r == tr) {
-            lazy[v] += addend;
+             lazy[v] = x;
             push(v, tl, tr);
         } else {
             int tm = (tl + tr) / 2;
-            update(v * 2 + 1, tl, tm, l, min(r, tm), addend);
-            update(v * 2 + 2, tm + 1, tr, max(l, tm + 1), r, addend);
+            update(v * 2 + 1, tl, tm, l, min(r, tm), x);
+            update(v * 2 + 2, tm + 1, tr, max(l, tm + 1), r, x);
             tree[v] = merge(tree[v * 2 + 1], tree[v * 2 + 2]);
         }
     }
@@ -83,3 +86,4 @@ struct SegmentTree {
          update(0,0,sz-1,l,r,idx);
     }
 };
+

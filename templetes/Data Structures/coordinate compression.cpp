@@ -5,8 +5,8 @@ struct compress {
     compress(vector<int> v){
         sort(all(v));
         v.erase(unique(all(v)), v.end());
-        f(i,0,v.size()) mp[v[i]] = i;
-        for(auto [a,b] : mp) org.push_back(a);
+        for(int i = 0 ;i < (int)v.size() ; i++) mp[v[i]] = i;
+        for(auto &[a,b] : mp) org.push_back(a);
         sz = v.size();
     }
     int idx(int val){
