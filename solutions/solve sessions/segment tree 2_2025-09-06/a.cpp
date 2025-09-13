@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -31,18 +32,15 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
-
-
 struct SegmentTree {
     struct node {
-        int val;
+        int mx,frq;
     };
 
     int n;
     vector<node> tree;
-    node neutral = {0}; 
+    node neutral = { INT32_MAX,0}; 
     int sz;
-    bool mx;
     SegmentTree(int size){
         sz = size;
         n = 1;
@@ -52,22 +50,26 @@ struct SegmentTree {
 
    
     node merge(const node &a, const node &b) {
-        return {a.val+b.val};
+        node ret = b;
+        if(b.mx - a.mx < 20){
+            ret.frq += a.mx / (1<<(b.mx-a.mx));
+        }
+        if(!ret.frq) return a;
+        return ret;
     }
 
-    void build(vector<int> &a, int v, int tl, int tr) {
+    void build(int v, int tl, int tr) {
         if (tl == tr) {
-                if (tl < (int)a.size()) tree[v] = {a[tl]};
-                else tree[v] = neutral;
+                tree[v] = { tl , 0 };
         } else {
                 int tm = (tl + tr) / 2;
-                build(a, v * 2 + 1, tl, tm);
-                build(a, v * 2 + 2, tm + 1, tr);
+                build(v * 2 + 1, tl, tm);
+                build(v * 2 + 2, tm + 1, tr);
                 tree[v] = merge(tree[v * 2 + 1], tree[v * 2 + 2]);
         }
     }
-    void build(vector<int>&a){
-        return build(a,0,0,sz-1);
+    void build(){
+        return build(0,0,sz-1);
     }
 
     // Query 1: Range query in [l, r]
@@ -84,46 +86,33 @@ struct SegmentTree {
         return query(l,r,0,0,sz-1);
     }
 
-    
 
     // Point update: set position pos to new_val
-    void update(int pos,int new_val,int v, int tl, int tr) {
+    void update(int pos,int val,int v, int tl, int tr) {
         if (tl == tr) {
-            tree[v] = {new_val};
+            tree[v].frq += val;
         } else {
             int tm = (tl + tr) / 2;
             if (pos <= tm)
-                update(pos, new_val,v * 2 + 1, tl, tm);
+                update(pos, val,v * 2 + 1, tl, tm);
             else
-                update(pos, new_val,v * 2 + 2, tm + 1, tr);
+                update(pos, val,v * 2 + 2, tm + 1, tr);
             tree[v] = merge(tree[v * 2 + 1], tree[v * 2 + 2]);
         }
     }
     void update(int pos,int new_val){
         update(pos,new_val,0,0,sz-1);
     }
+
 };
+
 void solve(int test_case) {
     int n,q; cin>>n>>q;
-    SegmentTree row(n),col(n);
-    vi frq1(n),frq2(n);
-    while(q--){
-        int op; cin>>op;
-        if(op == 1){
-            int x,y; cin>>x>>y; x--,y--;
-            frq1[x]++,frq2[y]++;
-            row.update(x,1); col.update(y,1);
-        }else if(op == 2){
-            int x,y; cin>>x>>y; x--,y--;
-            frq1[x]--,frq2[y]--;
-            if(!frq1[x]) row.update(x,0); 
-            if(!frq2[y]) col.update(y,0);
-        }else{
-            int x1,y1,x2,y2; cin>>x1>>y1>>x2>>y2; x1--,x2--,y1--,y2--;
-            if( (row.query(x1,x2).val == x2-x1+1) || (col.query(y1,y2).val == y2-y1+1)) YES;
-            else NO;
-        }
-    }
+    vi v(n); cin>>v;
+    SegmentTree st(200005);
+    st.build();
+    for(int i = 0 ; i < n ; i++) st.update(v[i],1);
+    cout<<st.query(0,200004).mx<<" "<<st.query(0,200004)
 }
 
 signed main() {
@@ -132,7 +121,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-   
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
