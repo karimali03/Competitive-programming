@@ -50,14 +50,14 @@ int clearItoLSB(int num,int i){
     //  12345i678
    //   123450000
    int mask = -1 << ( i + 1 );
-   return num && mask;
+   return num & mask;
 }
 
 int clearMSBtoI(int num,int i){
     // 1234i5678
     // 000005678
     int mask = (1 << i) - 1;
-    return num && mask;
+    return num & mask;
 }
 
 string binToStr(double num){
