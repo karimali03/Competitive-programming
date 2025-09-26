@@ -1,33 +1,30 @@
-/*
-to get fib(n), combute {{0, 1}, {1, 1}}^n
-*/
-
+const int MOD = 1e9+7;
 struct Matrix {
-    ll a[2][2];
-    Matrix() {
-        a[0][0] = a[0][1] = a[1][0] = a[1][1] = 0;
-    }
-    Matrix operator*(const Matrix &b) const {
-        Matrix c;
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                for (int k = 0; k < 2; k++) {
-                    c.a[i][j] = (c.a[i][j] + a[i][k] * b.a[k][j]) % MODE;
+    int rows, cols;
+    vector<vector<int>> a;
+    Matrix(){}; 
+    Matrix(int r, int c) : rows(r), cols(c), a(r, vector<int>(c)) {}
+ 
+    Matrix operator*(const Matrix &other) const {
+        assert(cols == other.rows); 
+        Matrix ret(rows, other.cols);
+        for (int i = 0; i < rows; i++) {
+            for (int k = 0; k < cols; k++) {
+                for (int j = 0; j < other.cols; j++) {
+                    (ret.a[i][j] += a[i][k] * other.a[k][j])%=MOD;
                 }
             }
         }
-        return c;
+        return ret;
     }
 };
-
-Matrix matrixpower(Matrix a, ll n) {
-    Matrix res;
-    for (int i = 0; i < 2; i++) res.a[i][i] = 1;
-    
-    while (n) {
-        if (n & 1) res = res * a;
-        a = a * a;
-        n >>= 1;
+ 
+Matrix expo(Matrix &x,int k){
+    Matrix ret(x.rows,x.cols);
+    f(i,0,x.rows) ret.a[i][i] = 1;
+    while(k > 0){
+        if(k & 1) ret = ret * x;
+        x = x * x;  k>>=1;
     }
-    return res;
+    return ret;
 }

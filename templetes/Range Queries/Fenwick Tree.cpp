@@ -1,28 +1,28 @@
-struct FenwickTree{
-    static const int N = 1e6+5;
-    ll bit[N] {};
-
-    ll merge(int a,int b){
-        return a + b;
+struct Fenwick {
+    int n;
+    vector<ll> bit;
+    Fenwick() : n(0) {}
+    Fenwick(int n_){
+        n = n_;
+        bit.assign(n+1, 0); // 1-indexed, supports indices 1..n
     }
-    // 1 based , add val to idx
-    void add(int idx,ll val){
-        while( idx < N){
-            bit[idx] = merge(bit[idx] , val);
-            idx+=idx&-idx;
+    void add(int idx, ll val){ // idx is 1..n
+        while(idx <= n){
+            bit[idx] = (bit[idx] + val) % MOD;
+            idx += idx & -idx;
         }
     }
-    // from 1 to idx
-    ll query(int idx){
-        ll ret=0;
-        while(idx>0){
-            ret = merge(ret , bit[idx]);
-            idx-=idx&-idx;
+    ll sumPrefix(int idx){ // sum 1..idx
+        ll res = 0;
+        while(idx > 0){
+            res = (res + bit[idx]) % MOD;
+            idx -= idx & -idx;
         }
-        return ret;
+        return res;
     }
-    // from l to r inclusive 
-    ll prefix(int l,int r){
-        return query(r)-query(l-1);
+    // sum on [l..r] with l,r in 1..n
+    ll sumRange(int l, int r){
+        if(l > r) return 0;
+        return (sumPrefix(r) - sumPrefix(l-1) + MOD) % MOD;
     }
 };
