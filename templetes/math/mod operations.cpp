@@ -13,7 +13,7 @@ int fp(int a,int b){
     while(b > 0){
         if(b&1) res = a * res % mod;
         a = a * a % mod;
-        b/=2;
+        b>>=1;
     }
 
     return res;
