@@ -34,26 +34,26 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    int n,t; cin>>n>>t;
+    int n; cin>>n;
     vii g(n);
-    f(i,1,n){
-        int x,y; cin>>x>>y; x--,y--;
-        g[x].push_back(y); g[y].push_back(x);
+    for(int i = 1 ; i < n ; i++){
+        int x; cin>>x; x--;
+        g[x].push_back(i); g[i].push_back(x);
     }
-    int st; cin>>st; st--;
+    string s; cin>>s;
     vii dp(n,vi(2,-1));
-    function<int(int,int,int)> rec = [&](int x,int p,int ch){
+    function<int(int,int,int)> rec = [&](int x,int p,int ch)->int{
         int &ret = dp[x][ch];
         if(~ret) return ret;
-        bool vld = false;
+        int ch1 = ch ? 1 : 0;
+        int ch2 =  (s[x] == 'S' && ch);
         for(auto it : g[x]) if(it != p){
-            if(!rec(it,x,1-ch)) vld = true;
+            ch1  += rec(it,x,  s[x] == 'P');
+            ch2  += rec(it,x,  (ch & !ch2) | s[x] == 'P');
         }
-        if(vld) return ret = 1;;
-        return ret = 0;
+        return ret = min(ch1 , ch2);
     };
-    if(rec(st,-1,0)) cout<<"Ron\n";
-    else cout<<"Hermione\n";
+    cout<<rec(0,-1,0)<<ln;
 }
 
 signed main() {
@@ -62,6 +62,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

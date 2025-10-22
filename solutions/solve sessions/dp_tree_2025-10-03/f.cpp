@@ -34,26 +34,26 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    int n,t; cin>>n>>t;
+    int n,c; cin>>n>>c;
+    vi v(n); cin>>v;
     vii g(n);
-    f(i,1,n){
+    for(int i = 1 ; i< n ; i++){
         int x,y; cin>>x>>y; x--,y--;
         g[x].push_back(y); g[y].push_back(x);
     }
-    int st; cin>>st; st--;
-    vii dp(n,vi(2,-1));
-    function<int(int,int,int)> rec = [&](int x,int p,int ch){
-        int &ret = dp[x][ch];
-        if(~ret) return ret;
-        bool vld = false;
+    const int INF = 1e16;
+    viii dp(n,vii(2,vi(2,INF)));
+    function<int(int,int,int,int)> rec = [&](int x,int p,int ch,int prv) -> int{
+        int &ret = dp[x][ch][prv];
+        if(ret != INF) return ret;
+        ret = ch ? v[x] : 0;
+        if(ch && prv) ret -=2*c;
         for(auto it : g[x]) if(it != p){
-            if(!rec(it,x,1-ch)) vld = true;
+            ret += max({0ll , rec(it,x,1,ch), rec(it,x,0,ch)});
         }
-        if(vld) return ret = 1;;
-        return ret = 0;
+        return ret;
     };
-    if(rec(st,-1,0)) cout<<"Ron\n";
-    else cout<<"Hermione\n";
+    cout<<max(rec(0,-1,0,0),rec(0,-1,1,0))<<ln;
 }
 
 signed main() {
@@ -62,6 +62,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
