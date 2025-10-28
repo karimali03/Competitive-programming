@@ -35,42 +35,20 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi d(n); cin>>d;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i=1;i<n;i++){
-        int x,y,w; cin>>x>>y>>w; x--,y--;
-        g[x].push_back({y,w}); g[y].push_back({x,w});
+    vi v(n); cin>>v;
+    int mx = 0;
+    for(int i = 0; i < n; i++){
+        mx = max(mx,v[i]);
+        if(i&1) v[i] = mx;
     }
-   
-    const int INF = 1e17;
-    vii dp(n,vi(2,INF));
-    function<int(int,int,int)> rec = [&](int x,int p,int ch)->int{
-        int &ret = dp[x][ch];
-        if(ret != INF) return ret;
-        if(ch > d[x]) return ret = -INF;
-        vi l,r;
-       for(auto [a,b] : g[x]) if(a!=p){
-            l.push_back(rec(a,x,0));
-            r.push_back(b + rec(a,x,1));
-        }
-        if(!l.empty()){
-            int sum = 0;
-            vi dif;
-            for(int i = 0;i < (int)l.size();i++){
-                sum += l[i];
-                dif.push_back(r[i]-l[i]);
-            }
-            sort(rall(dif));
-            int ptr = 0;
-            ret = -INF;
-            for(int i = ch ; i <= d[x] ; i++){
-                ret = max(ret , sum);
-                if(ptr < (int)dif.size()) sum += dif[ptr++];
-            }
-        }else ret = 0;
-        return ret;
-    };
-    cout<<rec(0,-1,0)<<ln;
+    int res = 0;
+    for(int i = 0;i < n ; i+=2){
+        int mn = 1e10;
+        if(i) mn = v[i-1] - 1;
+        if(i+1 < n) mn = min(mn,v[i+1] - 1);
+        if(v[i] > mn) res += v[i]-mn;
+    }
+    cout<<res<<ln;
 }
 
 signed main() {
@@ -79,7 +57,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

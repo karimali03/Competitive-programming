@@ -42,7 +42,7 @@ void solve(int test_case) {
         g[x].push_back({y,w}); g[y].push_back({x,w});
     }
    
-    const int INF = 1e17;
+    const int INF = 1e18;
     vii dp(n,vi(2,INF));
     function<int(int,int,int)> rec = [&](int x,int p,int ch)->int{
         int &ret = dp[x][ch];
@@ -62,11 +62,12 @@ void solve(int test_case) {
             }
             sort(rall(dif));
             int ptr = 0;
-            ret = -INF;
-            for(int i = ch ; i <= d[x] ; i++){
+            ret = sum;
+            for(int i = ch ; i < d[x] ; i++){
                 ret = max(ret , sum);
                 if(ptr < (int)dif.size()) sum += dif[ptr++];
             }
+            ret = max(ret , sum);
         }else ret = 0;
         return ret;
     };

@@ -33,44 +33,49 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-void solve(int test_case) {
-    int n; cin>>n;
-    vi d(n); cin>>d;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i=1;i<n;i++){
-        int x,y,w; cin>>x>>y>>w; x--,y--;
-        g[x].push_back({y,w}); g[y].push_back({x,w});
+
+
+const int N = 200005;
+int dp1[N],cnt[N],dp2[N];
+vector<pair<int,int>>adj[N];
+int n;
+void rec(int u,int p){
+    cnt[u] = 1;
+    dp1[u] = 0;
+    for(auto [it,w] : adj[u]){
+        if(it == p) continue;
+        rec(it,u);
+        dp1[u] += w * cnt[it] + dp1[it];
+        cnt[u]+=cnt[it];
     }
-   
-    const int INF = 1e17;
-    vii dp(n,vi(2,INF));
-    function<int(int,int,int)> rec = [&](int x,int p,int ch)->int{
-        int &ret = dp[x][ch];
-        if(ret != INF) return ret;
-        if(ch > d[x]) return ret = -INF;
-        vi l,r;
-       for(auto [a,b] : g[x]) if(a!=p){
-            l.push_back(rec(a,x,0));
-            r.push_back(b + rec(a,x,1));
-        }
-        if(!l.empty()){
-            int sum = 0;
-            vi dif;
-            for(int i = 0;i < (int)l.size();i++){
-                sum += l[i];
-                dif.push_back(r[i]-l[i]);
-            }
-            sort(rall(dif));
-            int ptr = 0;
-            ret = -INF;
-            for(int i = ch ; i <= d[x] ; i++){
-                ret = max(ret , sum);
-                if(ptr < (int)dif.size()) sum += dif[ptr++];
-            }
-        }else ret = 0;
-        return ret;
-    };
-    cout<<rec(0,-1,0)<<ln;
+}
+
+void rec2(int u, int p) {
+    for (auto [v, w] : adj[u]) {
+        if (v == p) continue;
+        dp2[v] = dp2[u] + dp1[u] - (dp1[v] + cnt[v] * w) + (n - cnt[v]) * w;
+
+        rec2(v, u);
+    }
+}
+void init(){
+    for (int i = 0; i < n; i++) {
+        adj[i].clear();
+        dp1[i] = dp2[i] = cnt[i] = 0;
+    }
+}
+
+void solve(int test_case) {
+    cin>>n;
+    init();
+    for(int i = 0 ; i < n-1;i++){
+        int x,y; cin>>x>>y; x--,y--;
+        adj[x].push_back({y,1});
+        adj[y].push_back({x,1});
+    }
+    rec(0,-1); rec2(0,-1);
+    for(int i = 0;i < n ; i++) cout<<dp1[i]+dp2[i]<<ln;
+
 }
 
 signed main() {
@@ -79,7 +84,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+ 
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

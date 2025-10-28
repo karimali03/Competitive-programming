@@ -32,45 +32,49 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     for (const T &x : v) out << x << ' ';
     return out;
 }
+const int N = 5005;
+int a[N],c[N];
+int n,b;
+vii g;
+int sz[N]{};
+int dp[N][N][2];
+void rec(int x){
+       dp[x][0][0] = 0;
+        dp[x][1][0] = a[x];
+        dp[x][1][1] = a[x] - c[x];
+        sz[x] = 1;
+        for(auto it : g[x]){
+            rec(it);
+            int m1 = sz[x] , m2 = sz[it];
+            vii res(m1+m2);
+            for(int i = m1 ; i >= 0; i--){
+                for(int j = m2;j >= 0 ; j--){
+                    dp[x][i+j][0] = min(dp[x][i+j][0],dp[x][i][0]+dp[it][j][0]);
+                    if(i) dp[x][i+j][1] = min(dp[x][i+j][1],dp[x][i][1]+min(dp[it][j][1],dp[it][j][0]));
+                }
+            }
+            sz[x]+=sz[it];
+        }
+}
 
 void solve(int test_case) {
-    int n; cin>>n;
-    vi d(n); cin>>d;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i=1;i<n;i++){
-        int x,y,w; cin>>x>>y>>w; x--,y--;
-        g[x].push_back({y,w}); g[y].push_back({x,w});
-    }
-   
-    const int INF = 1e17;
-    vii dp(n,vi(2,INF));
-    function<int(int,int,int)> rec = [&](int x,int p,int ch)->int{
-        int &ret = dp[x][ch];
-        if(ret != INF) return ret;
-        if(ch > d[x]) return ret = -INF;
-        vi l,r;
-       for(auto [a,b] : g[x]) if(a!=p){
-            l.push_back(rec(a,x,0));
-            r.push_back(b + rec(a,x,1));
+  cin>>n>>b;
+  g = vii(n);
+  for(int i = 0 ;i < n ; i++){
+        cin>>a[i]>>c[i];
+        if(i){
+            int x; cin>>x; x--;
+            g[x].push_back(i);
         }
-        if(!l.empty()){
-            int sum = 0;
-            vi dif;
-            for(int i = 0;i < (int)l.size();i++){
-                sum += l[i];
-                dif.push_back(r[i]-l[i]);
-            }
-            sort(rall(dif));
-            int ptr = 0;
-            ret = -INF;
-            for(int i = ch ; i <= d[x] ; i++){
-                ret = max(ret , sum);
-                if(ptr < (int)dif.size()) sum += dif[ptr++];
-            }
-        }else ret = 0;
-        return ret;
-    };
-    cout<<rec(0,-1,0)<<ln;
+   }
+   f(i,0,n+1) f(j,0,n+1) f(k,0,2) dp[i][j][k] = 1e16;
+    rec(0);
+    for(int i = n ; i >= 0 ; i--){
+        if(min(dp[0][i][0],dp[0][i][1]) <= b){
+            cout<<i<<ln;
+            return;
+        }
+    }
 }
 
 signed main() {
@@ -79,7 +83,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
