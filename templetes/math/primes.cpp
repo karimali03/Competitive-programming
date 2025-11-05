@@ -38,7 +38,7 @@ vector<int>spf(N+5);
  }
 
 
- map<int,int> fast_fact(int n){   // O ( log(n) )
+map<int,int> fast_fact(int n){   // O ( log(n) )
      map<int,int>res;
      while (n>1)
      {

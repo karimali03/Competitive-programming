@@ -1,0 +1,7 @@
+6
+1 first 5
+1 second 6
+1 first 10
+1 third 20
+3 third
+2 first

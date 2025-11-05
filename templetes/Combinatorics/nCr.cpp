@@ -26,14 +26,3 @@ vii binomialCoeff(int n, int k)
 
     return (C);
 }
-/*
-Symmetry rule :  C(n,k) = C(n,n-k)
-Factoring in :  C(n,k) = (n/k) C(n-1,k-1)
-Sum over k : sum[k=0 -> n ]C(n,k) = 2^n
-sum over n : sum[m=0 -> n ]C(m,k) = C(n+1,k+1)
-sum over n and k : sum[k=0 -> m]C(n+k,k) = C(n+m+1,m)
-sum of squares : C(n,0)^2 + C(n,1)^2 .... + C(n,n)^2 = C(2*n,n)
-weighted sum : C(n,1) + 2*C(n,2) + 3*C(n,3) ... + nC(n,n) = n*2^n-1
-Fib : C(n,0) + C(n-1,1) + ... + C(n-k,k) + .... + C(0,n) = F(n+1)
-sum [j = 1 -> n ] { j * C(n-j,r) } = C(n+1,r+2)
-*/
