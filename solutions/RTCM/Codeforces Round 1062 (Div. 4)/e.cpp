@@ -33,37 +33,54 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-void code(){
-    int n; cin>>n;
+void solve(int test_case) {
+    int n,k,x; cin>>n>>k>>x;
     vi v(n); cin>>v;
-    int a,b;
-    for(int i =0 ;i < n;i++){
-        if(v[i] == 1) a = i;
-        if(v[i] == n) b = i;
-    }
-    cout<<(a<b ? 1 : 0)<<endl;
-}
-
-int ask(int l,int r){
-    cout<<"? "<<l<<" "<<r<<endl;
-    int x; cin>>x;
-    return x;
-}
-void decode(){
-    int n,x; cin>>n>>x;
-    int l = 0, r = n-1;
+    sort(all(v));
+    auto calc = [&](int l,int r){
+        return l > r ? 0 : r-l+1;
+    };
+    auto can = [&](int mx) -> bool{
+        int prv = -1;
+        int cnt = k;
+        for(int i = 0;i <= n ;i++){
+            if(i == n) cnt -= calc(prv+mx,x);
+            else if(i) cnt -= calc(prv+mx,v[i]-mx);
+            else cnt -= calc(0,v[i]-mx);
+            prv = v[i];
+        }
+        return cnt <= 0;
+    };
     int ans = 0;
+    int l = 1 , r = 1e9;
     while(l<=r){
         int mid = l + (r-l)/2;
-        if(x){
-            if(ask(1,mid+1) == n-1) r = mid-1,ans=mid;
-            else l = mid+1;
-        }else{
-            if(ask(mid+1,n) == n-1) l = mid+1,ans=mid;
-            else r = mid-1;
-        }
+        if(can(mid)){
+            ans = mid;
+            l = mid+1;
+        }else r = mid-1;
     }
-    cout<<"! "<<ans+1<<endl;
+    int mx = ans;
+    int prv = -1;
+    int cnt = k;
+    if(ans == 0){
+        for(int i = 0 ; i < k;  i++) cout<<i<<" ";
+        cout<<ln; return;
+    }
+    for(int i = 0;i <= n ;i++){
+        pair<int,int>inv;
+        if(i == n) inv =  {prv+mx,x};
+        else if(i) inv =  {prv+mx,v[i]-mx};
+        else inv = {0,v[i]-mx};
+        prv = v[i];
+        int it = calc(inv.first,inv.second);
+        for(int a = 0; a < min(cnt,it) ; a++){
+            cout<<inv.first+a<<" ";
+        }
+        cnt -= it;
+        if(cnt <= 0) break;
+    }
+    cout<<ln;
 }
 
 signed main() {
@@ -72,11 +89,9 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    string s; cin>>s;
     cin >> t;
     for (int i = 1; i <= t; i++) {
-        if(s == "first") code();
-        else decode();
+        solve(i);
     }
 
     return 0;

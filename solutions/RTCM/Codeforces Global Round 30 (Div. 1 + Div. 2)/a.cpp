@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -32,35 +33,14 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
 void solve(int test_case) {
-    string s; cin>>s;
-    int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
-    }
-    int q; cin>>q;
-    while(q--){
-        string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
-        }
-        cout<<ln;
-        while(sz--) s.pop_back();
-    }
-    
-
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    int x; cin>>x;
+    int mn = *min_element(all(v));
+    int mx = *max_element(all(v));
+    if(x >= mn && x <= mx) YES;
+    else NO;
 }
 
 signed main() {
@@ -69,7 +49,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

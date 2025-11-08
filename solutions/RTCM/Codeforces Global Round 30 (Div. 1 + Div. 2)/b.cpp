@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -32,36 +33,39 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
 void solve(int test_case) {
-    string s; cin>>s;
-    int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
+    int n; cin>>n;
+    pair<int,int>ev = {-1,-1};
+    vi od;
+    for(int i = 0;i < n ; i++){
+        int x; cin>>x;
+        if(x&1) od.push_back(x);
+        else{
+            if(ev.first !=-1) ev.second = x;
+            if(ev.first==-1)  ev.first=x;
+        } 
     }
-    int q; cin>>q;
-    while(q--){
-        string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
+    if(ev.first != -1 && ev.second != -1){
+        cout<<ev.first<<" "<<ev.second<<ln;
+        return;
+    }
+    if(ev.first != -1){
+        for(auto it : od) if( it < ev.first && (ev.first%it)%2==0){
+            cout<<it<<" "<<ev.first<<ln;
+            return;
         }
-        cout<<ln;
-        while(sz--) s.pop_back();
     }
-    
-
+    for(int i = 0; i < (int)od.size() ; i++){
+        for(int j = i+1 ; j < (int)od.size() ; j++){
+            if((od[j]%od[i])%2==0){
+                cout<<od[i]<<" "<<od[j]<<ln;
+                return;
+            }
+        }
+    }
+    NA;
 }
+
 
 signed main() {
     ios_base::sync_with_stdio(false);
@@ -69,7 +73,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

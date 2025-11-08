@@ -33,43 +33,42 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 
-
+const int N = 8005;
+int v[N],c[N];
+int n;
+// ll rec(int i,int j){
+//     if(i == n+1) return 0;
+//     ll &ret = dp[i][j];
+//     if(~ret) return ret;
+//     ret = rec(i+1,j);
+//     if(v[i] >= v[j]) ret = max(ret ,(ll) c[i] + rec(i+1,i));
+//     return ret;
+// }
 void solve(int test_case) {
-    string s; cin>>s;
-    int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
-    }
-    int q; cin>>q;
-    while(q--){
-        string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
+    cin>>n;
+    v[0] = -1;
+    ll sum = 0;
+    f(i,1,n+1) cin>>v[i];
+    f(i,1,n+1) cin>>c[i],sum+=c[i];
+    vector<ll> dp(n+1,0);
+    for(int i = n ; i >= 1 ; i--){
+        vector<ll> cur(n+1);
+        for(int j = n-1 ; j >= 0 ; j--){
+            cur[j] = dp[j];
+            if(v[i] >= v[j]) cur[j] = max<ll>(cur[j] , c[i] + dp[i]);
         }
-        cout<<ln;
-        while(sz--) s.pop_back();
+        dp = cur;
     }
-    
-
+    cout<<sum-dp[0]<<ln;
 }
 
-signed main() {
+int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

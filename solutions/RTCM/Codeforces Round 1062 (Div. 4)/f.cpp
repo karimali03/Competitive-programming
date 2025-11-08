@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -32,35 +33,45 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
 void solve(int test_case) {
-    string s; cin>>s;
-    int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
+    int n,k; cin>>n>>k;
+    vii g(n);
+    for(int i = 1 ; i < n ;i++){
+        int x,y; cin>>x>>y; x--,y--;
+        g[x].push_back(y);
+        g[y].push_back(x);
     }
-    int q; cin>>q;
-    while(q--){
-        string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
+    vi sz(n);
+    vi dp(n);
+    function<void(int,int)> dfs = [&](int x,int p){
+        sz[x] = 1;
+        for(auto it : g[x]) if(it != p){
+            dfs(it,x);
+            sz[x] += sz[it];
+            dp[x] += dp[it];
         }
-        cout<<ln;
-        while(sz--) s.pop_back();
-    }
-    
-
+        dp[x] += (sz[x] >= k);
+    };
+    dfs(0,-1);
+    int ans = 0;
+    function<void(int,int)> reroot = [&](int x,int p){
+        ans += dp[x];
+     //   cout<<x<<" "<<dp[x]<<" "<<sz[x]<<ln;
+        for(auto it : g[x]) if(it != p){
+            int ogsz = sz[x];
+            int og = dp[x];
+            dp[x] -= (sz[x] >= k) + dp[it];
+            dp[it] -= (sz[it] >= k);
+            sz[x] -= sz[it];
+            sz[it] += sz[x];
+            dp[x] += (sz[x] >= k);
+            dp[it] += dp[x] + (sz[it] >= k);
+            reroot(it,x);
+            dp[x] = og  , sz[x] = ogsz;
+        }
+    };
+    reroot(0,-1);
+    cout<<ans<<ln;
 }
 
 signed main() {
@@ -69,7 +80,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -32,35 +33,33 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
 void solve(int test_case) {
-    string s; cin>>s;
-    int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
-    }
-    int q; cin>>q;
-    while(q--){
-        string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
+    int n,k; cin>>n>>k;
+    string a,b; cin>>a>>b;
+    int ans = 0;
+    int j = n-1;
+    for(int i = n-1 ; i >= 0 ; i--){
+        while( j > 0 && ( (j > i) || (b[i] != a[j]) )  ) j--;
+        if(b[i] != a[j]){
+            NA; return;
         }
-        cout<<ln;
-        while(sz--) s.pop_back();
+        ans = max(ans , i-j);
+    }   
+    if(ans > k){
+        NA; return;
     }
-    
-
+    cout<<ans<<ln;
+    string s = a;
+    for(int it = 0; it < ans ; it++){
+        string nxt = s;
+        int j = n-1;
+        for(int i = n-1 ; i >= 1 ; i--){
+            while(j>0 && ( (j>i) || b[i] != s[j]) ) j--;
+            nxt[min(j+1,i)] = s[j];
+        }   
+        cout<<nxt<<ln;
+        s = nxt;
+    }
 }
 
 signed main() {
@@ -69,7 +68,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
