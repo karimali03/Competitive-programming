@@ -62,11 +62,10 @@ void solve(int test_case) {
         int i = cur[0],j = cur[1];
         int cost = cur[3];
         int ch = cur[2];
-        if(i == n-1 && j == m && ch == 0){
-            dist[i][j][ch] = cost; continue;
-        }
-        else if(i < 0 || j < 0 || i >= n || j >= m || dist[i][j][ch] != -1) continue;
+        if(i < 0 || j < 0) continue;
+        if(dist[i][j][ch] != -1) continue;
         dist[i][j][ch] = cost;
+        if(i >= n || j >= m) continue;
         for(int dir = 0 ; dir < 4 ; dir++){
             if(ch+dir == 3) continue;
              if(calc(ch,dir,v[i][j])) q.push_front({i+di[dir],j+dj[dir],dir,cost});

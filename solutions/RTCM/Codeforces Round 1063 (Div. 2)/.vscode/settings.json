@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "complex": "cpp",
+        "chrono": "cpp",
+        "random": "cpp",
+        "limits": "cpp",
+        "valarray": "cpp",
+        "algorithm": "cpp",
+        "span": "cpp"
+    }
+}

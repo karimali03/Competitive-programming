@@ -34,12 +34,10 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    vi v = {1,2,3,4,5};
-    do{
-        bool vld = true;
-        for(int i = 1 ; i < 5 ; i++) if(abs(v[i]-v[i-1])==1) vld = false;
-        if(vld) cout<<v<<ln;
-    }while(next_permutation(all(v)));
+    vi v(3); cin>>v;
+    sort(rall(v));
+    f(i,0,3) cout<<v[i];
+    cout<<ln;
 }
 
 signed main() {

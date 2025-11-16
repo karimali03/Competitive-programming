@@ -33,34 +33,65 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 
-
+vector<int> prefix_function(string &s){
+    int n = s.size();
+    vector<int> pi(n);
+    for(int i = 1 ; i < n ; i++){
+        int j = pi[i-1];
+        while(j>0 && s[i] != s[j]) j = pi[j-1];
+        if(s[i] == s[j]) j++;
+        pi[i] = j;
+    }
+    return pi;
+}
+/*
+current match length is k, I add character c, what will my new match length be?
+way to "de-amortize" the standard KMP prefix function calculation.
+*/
+vii prefix_function_automaton(string &s){
+    int n = s.size();
+    auto pi = prefix_function(s);
+    vii aut(n,vi(26));
+    aut[0][s[0]-'a'] = 1;
+    for(int i = 1 ;i < n ; i++){
+        for(int j = 0; j < 26 ; j++){
+            if(j == (s[i]-'a')) aut[i][j] = i+1;
+            else aut[i][j] = aut[pi[i-1]][j];
+        }
+    }
+    return aut;
+}
 void solve(int test_case) {
     string s; cin>>s;
     int n = s.size();
-    vector<int> pi(n+10);
-    int j = 0;
-    for(int i = 1; i< n ; i++){
-        while(j>0&&s[j]!=s[i]) j = pi[j-1];
-        if(s[i]==s[j]) j++;
-        pi[i] = j;
+    auto pi = prefix_function(s);
+    vii aut(n,vi(26));
+    aut[0][s[0]-'a'] = 1;
+    for(int i = 1; i < n ; i++){
+        for(int j = 0; j < 26 ; j++){
+            if(j == (s[i]-'a')) aut[i][j] = i+1;
+            else aut[i][j] = aut[pi[i-1]][j];
+        }
     }
+
     int q; cin>>q;
     while(q--){
         string x; cin>>x;
-        for(auto ch : x) s.push_back(ch);
-        int sz = x.size();
-        int og = j;
-        for(int i = n ; i < n+sz ; i++){
-            while(og>0&& s[i] != s[og]) og = pi[og-1];
-            if(s[og]==s[i]) og++;
-            pi[i] = og;
-            cout<<pi[i]<<" ";
+        s+=x;
+        int m = x.size();
+        for(int i = n ; i < n+m;  i++){
+            aut.push_back(vector<int>(26));
+            for(int j = 0; j < 26 ; j++){
+                if(j == (s[i]-'a')) aut[i][j] = i+1;
+                else aut[i][j] = aut[pi[i-1]][j];
+            }
+            pi.push_back(aut[pi[i-1]][s[i]-'a']);
+            cout<<pi.back()<<" ";
         }
         cout<<ln;
-        while(sz--) s.pop_back();
+        while(m--) s.pop_back(),pi.pop_back(),aut.pop_back();
     }
     
-
 }
 
 signed main() {

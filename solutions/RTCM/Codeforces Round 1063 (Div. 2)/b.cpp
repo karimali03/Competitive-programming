@@ -34,12 +34,29 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    vi v = {1,2,3,4,5};
-    do{
-        bool vld = true;
-        for(int i = 1 ; i < 5 ; i++) if(abs(v[i]-v[i-1])==1) vld = false;
-        if(vld) cout<<v<<ln;
-    }while(next_permutation(all(v)));
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    string s; cin>>s;
+    for(int i = 0; i < n ; i++){
+        if(s[i] == '1' && (v[i] == 1 || v[i] == n)){
+            NA; return;
+        }
+    }   
+    if(s[0] == '1' || s[n-1] == '1'){
+        NA; return;
+    }
+    pair<int,int> idx;
+    for(int i = 0; i < n ; i++){
+        if(v[i] == 1) idx.first = i;
+        if(v[i] == n) idx.second = i;
+    }
+    
+    cout<<5<<ln;
+    cout<<min(idx.first,idx.second)+1<<" "<<max(idx.first,idx.second)+1<<ln;
+    cout<<min(0ll,idx.first)+1<<" "<<max(0ll,idx.first)+1<<ln;
+    cout<<min(n-1,idx.first)+1<<" "<<max(n-1,idx.first)+1<<ln;
+    cout<<min(0ll,idx.second)+1<<" "<<max(0ll,idx.second)+1<<ln;
+    cout<<min(n-1,idx.second)+1<<" "<<max(n-1,idx.second)+1<<ln;
 }
 
 signed main() {
@@ -48,7 +65,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
- 
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -34,12 +34,31 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    vi v = {1,2,3,4,5};
-    do{
-        bool vld = true;
-        for(int i = 1 ; i < 5 ; i++) if(abs(v[i]-v[i-1])==1) vld = false;
-        if(vld) cout<<v<<ln;
-    }while(next_permutation(all(v)));
+    int n; cin>>n;
+    vector<pair<int,int>> pre(n);
+    vector<pair<int,int>> suf(n);
+    vii v(2,vi(n));
+    cin>>v[0]>>v[1];
+    pre[0] = {v[0][0],v[0][0]};
+    suf[n-1] = {v[1][n-1],v[1][n-1]};
+    for(int i = 1; i < n; i++) 
+    pre[i] = {min(v[0][i],pre[i-1].first) , max(v[0][i],pre[i-1].second)};
+    for(int i = n-2 ; i >= 0 ; i--)
+    suf[i] = {min(v[1][i],suf[i+1].first) , max(v[1][i],suf[i+1].second)};
+    vi res(2*n+2,1e10);
+    for(int i = 0;i < n ; i++){
+        int l = min(pre[i].first,suf[i].first);
+        int r = max(pre[i].second,suf[i].second);
+        res[l] = min(res[l] , r);
+    }
+    int ans = 0;
+    for(int i = 2*n ; i >= 1 ; i--){
+     //   cout<<i<<" "<<res[i]<<ln;
+        res[i] = min(res[i] , res[i+1]);
+        if(res[i] == 1e10) continue;
+        ans += (2*n-res[i]+1);
+    }
+    cout<<ans<<ln;
 }
 
 signed main() {
@@ -48,7 +67,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
- 
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

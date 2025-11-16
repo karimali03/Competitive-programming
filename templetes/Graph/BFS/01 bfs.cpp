@@ -1,20 +1,13 @@
 // 0-1 BFS
-vector<int> d(n, INF);
-d[s] = 0;
-deque<int> q;
-q.push_front(s);
+vector<int> d(n, -1);
+deque<pair<int,int>> q;
+q.push_front({start,0);
 while (!q.empty()) {
-    int v = q.front();
-    q.pop_front();
-    for (auto edge : adj[v]) {
-        int u = edge.first;
-        int w = edge.second;
-        if (d[v] + w < d[u]) {
-            d[u] = d[v] + w;
-            if (w == 1)
-                q.push_back(u);
-            else
-                q.push_front(u);
-        }
+    auto [cur,cost] = q.front(); q.pop_front();
+    if(d[cur] != -1) continue;
+    d[cur] = cost;
+    for (auto [u,w] : adj[v]) {
+        if(w) q.push_back({u,cost+w});
+        else q.push_front({u,cost});
     }
 }

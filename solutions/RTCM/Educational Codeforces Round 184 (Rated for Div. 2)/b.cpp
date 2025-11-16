@@ -33,13 +33,29 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+
 void solve(int test_case) {
-    vi v = {1,2,3,4,5};
-    do{
-        bool vld = true;
-        for(int i = 1 ; i < 5 ; i++) if(abs(v[i]-v[i-1])==1) vld = false;
-        if(vld) cout<<v<<ln;
-    }while(next_permutation(all(v)));
+    string s; cin>>s;
+    int n = s.size();
+    for(int i = 0; i < n-1 ; i++){
+        if(((int)s[i] == 42 && (int)s[i+1] == 42) ||
+         ((int)s[i] == 42 && (int)s[i+1] == 60) || 
+         ((int)s[i] == 62 && (int)s[i+1] == 42)  || 
+         ((int)s[i] == 62 && (int)s[i+1] == 60)){
+            NA; return;
+        }
+    }
+    int i = 0;
+    int cnt = 0;
+    while(i < n && (int)s[i] == 60) i++,cnt++;
+    if(i<n && (int)s[i] == 42) cnt++;
+    int res = cnt;
+    cnt = 0 , i = n-1;
+    while(i >= 0 && (int)s[i] == 62) i--,cnt++;
+    if(i >= 0 && (int)s[i] == 42) cnt++;
+    res = max(res , cnt);
+    cout<<res<<ln;
+
 }
 
 signed main() {
@@ -48,7 +64,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
- 
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
