@@ -29,7 +29,7 @@ void dfs(int v) {
             low[v] = min(low[v], tin[u]);
         }
     }
-
+    // tarjain assign SCC number in reverse topo sort   if C1 -> C2  them ID1 > ID2
     if (low[v] == tin[v]) {
         while (true) {
             int u = st.top(); st.pop();

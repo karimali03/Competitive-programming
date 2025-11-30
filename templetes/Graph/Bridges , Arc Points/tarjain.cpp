@@ -1,4 +1,4 @@
-const int N = 300005;
+const int N = 200005;
 vector<pair<int,int>> adj[N];
 int low[N],tin[N];
 bool is_bridge[N],is_arc[N];
@@ -12,16 +12,17 @@ void init(int n,int m){
     for(int i = 0 ; i < m ; i++) is_bridge[i] = false;
     timer = 0;
 }
-void tarjain(int v,int p){ // replace p with e is there are multi edges between two nodes
+// replace parent with edge idx is there are multi edges between two nodes
+void tarjain(int v,int p){ 
     low[v] = tin[v] = timer++;
     int kids = 0;
     for(auto [u,e] : adj[v]){ 
-        if(u == p) continue;
+        if(e == p) continue;
         if(tin[u] != -1){ // back edge 
             low[v] = min(low[v] , tin[u]);
             continue;
         }
-        tarjain(u,v); // tree edge 
+        tarjain(u,e); // tree edge 
         low[v] = min(low[v],low[u]);
         if(low[u] > tin[v]) is_bridge[e] = true;
         if(p != -1 && low[u] >= tin[v]) is_arc[v] = true;
@@ -29,6 +30,7 @@ void tarjain(int v,int p){ // replace p with e is there are multi edges between 
     }
     if(p == -1 && kids > 1) is_arc[v] = true;
 }
+
 
 int id[N];
 void bridge_tree(int v,int p , int x){
