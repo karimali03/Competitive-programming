@@ -1,15 +1,39 @@
-/*
-    1. General Graph (arbitrary capacities):
-       - Time: O(V^2 * E)
-    2. Unit Capacity Graphs (capacities = 1):
-       - Time: O(sqrt(V) * E)
-    3. Bounded Small Capacities (e.g., 1 ≤ c ≤ 1000):
-       - Time: Better than general case, often around O(min(V^2, E sqrt(V)))
-    - Dinic is best for sparse graphs or unit capacity cases
-    - For large capacities or dense graphs, use Push-Relabel or Capacity Scaling
-  */
-  
-const int MAXV = 1005;
+#include <bits/stdc++.h>
+using namespace std;
+
+#define ln "\n"
+#define ll long long
+#define ld long double
+#define ull unsigned long long
+#define vec vector
+#define vi vector<int>
+#define vii vector<vector<int>>
+#define viii vector<vector<vector<int>>>
+#define f(i, a, b) for(int i = a; i < b; i++)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
+#define co(x) __builtin_popcountll(x)
+#define ctz(x) __builtin_ctzll(x)
+#define clz(x) __builtin_clzll(x)
+#define PI acos(-1)
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
+
+template<typename T = int>
+istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v) in >> x;
+    return in;
+}
+
+template<typename T = int>
+ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (const T &x : v) out << x << ' ';
+    return out;
+}
+
+
+const int MAXV = 251005;
 const int INF = 1e9;
 
 struct Dinic {
@@ -118,3 +142,45 @@ struct Dinic {
         }
     }
 };
+
+
+void solve(int test_case) {
+    int n; cin>>n;
+    int cnt = 0;
+    Dinic st;
+    int s = 0 , t = 1;
+    int BR = 2 + n*n;
+    int BC = BR + n; 
+    st.init(s,t);
+    for(int i = 0;i < n ; i++){
+        for(int j = 0; j < n ; j++){
+            int x; cin>>x; 
+            if(x > 1){
+                st.addEdge(s,i*n+j+2,x-1);
+                st.addEdge(i*n+j+2,BR+i,x-1);
+                st.addEdge(i*n+j+2,BC+j,x-1);
+            }else if(x == 0){
+                st.addEdge(i*n+j+2,t,1);
+                st.addEdge(BR+i,i*n+j+2,1);
+                st.addEdge(BC+j,i*n+j+2,1);
+                cnt++;
+            }
+        }
+    }
+  
+    int res = 2 * cnt - st.maxFlow();
+    cout << res<<ln;
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int t = 1;
+    for (int i = 1; i <= t; i++) {
+        solve(i);
+    }
+
+    return 0;
+}

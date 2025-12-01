@@ -5,14 +5,14 @@
 
 | Algorithm       | Goal                      | Type              | Time Complexity        | Use When...                                           |
 |-----------------|---------------------------|-------------------|------------------------|--------------------------------------------------------|
-| Hopcroft–Karp   | Max Matching              | Unweighted        | O(√V · E)              | - You need max cardinality matching                   |
+| Hopcroft–Karp   | Max Matching              | Unweighted        | O( sqrt(V) · E)              | - You need max cardinality matching                   |
 |                 |                           |                   |                        | - Graph is unweighted                                 |
 |-----------------|---------------------------|-------------------|------------------------|--------------------------------------------------------|
-| Hungarian       | Min Cost Max Matching     | Weighted          | O(N³)                  | - Matching has costs/weights                          |
+| Hungarian       | Min Cost Max Matching     | Weighted          | O(N^3)                  | - Matching has costs/weights                          |
 | (Kuhn–Munkres)  |                           |                   |                        | - Need optimal pairing with min total cost            |
 |-----------------|---------------------------|-------------------|------------------------|--------------------------------------------------------|
-| Dinic’s Algorithm| Max Flow (⇒ Max Matching) | Flow-based        | O(E√V) for unit cap     | - Need flexible modeling (capacities, constraints)    |
-|                 |                           |                   | O(V²·E) general case    | - Part of a bigger flow/min-cut problem               |
+| Dinic’s Algorithm| Max Flow (⇒ Max Matching) | Flow-based        | O(E sqrt(V) ) for unit cap     | - Need flexible modeling (capacities, constraints)    |
+|                 |                           |                   | O( V^2 ·E) general case         | - Part of a bigger flow/min-cut problem               |
 
 ==================================================================
 🧠 Quick Tips:
