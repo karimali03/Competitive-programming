@@ -1,4 +1,3 @@
-
 struct Trie {
     struct node {
         unordered_map<int,int>nxt;
