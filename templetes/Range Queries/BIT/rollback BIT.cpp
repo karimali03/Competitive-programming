@@ -1,9 +1,9 @@
-struct RollbackBIT {
+struct BIT {
     int n;
     vector<int> tree;
     vector<pair<int, int>> history; // Stores {index, value_added}
 
-    RollbackBIT(int sz) : n(sz), tree(sz + 1, 0) {}
+    BIT(int sz) : n(sz), tree(sz + 1, 0) {}
 
     // Add val to index idx
     void add(int idx, int val) {

@@ -1,4 +1,4 @@
-castruct SegmentTree {
+struct SegmentTree {
     struct node {
         int pre,suf,sum,mx;
     };
