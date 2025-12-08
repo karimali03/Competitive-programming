@@ -33,33 +33,43 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+int n;
+vi p;   
+vi pos; 
+
+void ask(int x, int y) {
+    cout <<"? "<<x<<" "<<y<<endl; 
+    int u, v;  cin>>u>>v;
+    int val_u = p[u];
+    int val_v = p[v];
+    swap(p[u], p[v]);
+    pos[val_u] = v;
+    pos[val_v] = u;
+}
+
 void solve(int test_case) {
-    int n,s,f; cin>>n>>f>>s; s--,f--;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i = 0;i < n ; i++){
-        for(int j = 0;j < n;  j++){
-            int x; cin>>x;
-            if(i == j || x == -1) continue;
-            g[i].push_back({j,x});
+    cin >> n;
+    p = pos = vi(n+1);
+
+    f(i, 1, n + 1) {
+        cin >> p[i];
+        pos[p[i]] = i;
+    }
+
+    f(l, 1, n / 2 + 1) {
+        int r = n - l + 1;
+
+        while (p[l] != l || p[r] != r) {
+            int idx_l = pos[l]; 
+            int idx_r = pos[r]; 
+            if (idx_l == r || idx_r == l)  ask(l, r);
+            else if (p[l] != l) ask(l, idx_l);
+            else ask(idx_r, r);
+            
         }
     }
 
-    priority_queue<pair<int,int>,vec<pair<int,int>>,greater<>>q;
-    vi dist(n,1e15);
-    q.push({0,f});
-    dist[f] = 0;
-    while(!q.empty()){
-        auto [w,node] = q.top(); q.pop();
-        if(w != dist[node]) continue;
-        for(auto [i,cost] : g[node]){
-            if(w + cost < dist[i]){
-                dist[i] = w + cost;
-                q.push({w + cost,i});
-            }
-        }
-    }
-    if(dist[s] == 1e15) cout<<-1<<ln;
-    else cout<<dist[s]<<ln;
+    cout<<"!"<<endl;
 }
 
 signed main() {
@@ -68,6 +78,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

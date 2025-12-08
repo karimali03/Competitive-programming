@@ -37,7 +37,7 @@ struct edge {
 	}
 };
 
-int MST_Kruskal(vector<edge> &edgeList, int n) { // O(E logV)
+int MST_Kruskal(vector<edge> &edgeList, int n) { // O( E log(E) )
 	dsu uf(n);
 	vector<edge> edges;	
 	int mstCost = 0;

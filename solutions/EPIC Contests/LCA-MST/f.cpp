@@ -33,33 +33,42 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+
+// Structure to store city coordinates
+struct Point {
+    int x, y;
+};
+
+// Function to calculate Euclidean distance
+double get_dist(const Point& a, const Point& b) {
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
+
 void solve(int test_case) {
-    int n,s,f; cin>>n>>f>>s; s--,f--;
-    vector<vector<pair<int,int>>> g(n);
+    int n; cin>>n;
+    vector<Point> v(n);
     for(int i = 0;i < n ; i++){
-        for(int j = 0;j < n;  j++){
-            int x; cin>>x;
-            if(i == j || x == -1) continue;
-            g[i].push_back({j,x});
+        cin>>v[i].x>>v[i].y;
+    }
+    vector<double> mn(n,1e18);
+    vi vis(n);
+    mn[0] = 0;
+    double res = 0;
+    for(int i = 0;i < n; i++){
+        int cur = -1;
+        for(int x = 0; x < n ; x++){
+            if(!vis[x] && ( cur == -1 || mn[x] < mn[cur]) ) cur = x;
         }
+        res += mn[cur];
+        for(int x = 0; x < n ; x++){
+            if(vis[x]) continue;
+            mn[x] = min(mn[x] , get_dist(v[cur],v[x]));
+        }
+        vis[cur] = 1;
     }
 
-    priority_queue<pair<int,int>,vec<pair<int,int>>,greater<>>q;
-    vi dist(n,1e15);
-    q.push({0,f});
-    dist[f] = 0;
-    while(!q.empty()){
-        auto [w,node] = q.top(); q.pop();
-        if(w != dist[node]) continue;
-        for(auto [i,cost] : g[node]){
-            if(w + cost < dist[i]){
-                dist[i] = w + cost;
-                q.push({w + cost,i});
-            }
-        }
-    }
-    if(dist[s] == 1e15) cout<<-1<<ln;
-    else cout<<dist[s]<<ln;
+    cout<<fixed<<setprecision(10)<<res<<ln;
+
 }
 
 signed main() {

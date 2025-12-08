@@ -33,33 +33,34 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-void solve(int test_case) {
-    int n,s,f; cin>>n>>f>>s; s--,f--;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i = 0;i < n ; i++){
-        for(int j = 0;j < n;  j++){
-            int x; cin>>x;
-            if(i == j || x == -1) continue;
-            g[i].push_back({j,x});
-        }
+// get the most significant bit
+int MSB(int x){
+    ll msb = 0;
+    while (x){
+        x >>= 1ll;
+        msb++;
     }
+    return msb - 1;
+}
 
-    priority_queue<pair<int,int>,vec<pair<int,int>>,greater<>>q;
-    vi dist(n,1e15);
-    q.push({0,f});
-    dist[f] = 0;
-    while(!q.empty()){
-        auto [w,node] = q.top(); q.pop();
-        if(w != dist[node]) continue;
-        for(auto [i,cost] : g[node]){
-            if(w + cost < dist[i]){
-                dist[i] = w + cost;
-                q.push({w + cost,i});
-            }
-        }
+void solve(int test_case) {
+    int n,k; cin>>n>>k;
+    if(k >= 64){
+        cout<< k + co(n) - 1 << ln;
+        return;
     }
-    if(dist[s] == 1e15) cout<<-1<<ln;
-    else cout<<dist[s]<<ln;
+    viii dp(64,vii(64,vi(2,-1)));
+    function<int(int,int,int)> rec = [&](int i,int rem,int c) -> int{
+        if(i == 63) return c;
+        int &ret = dp[i][rem][c];
+        if(~ret) return ret;
+        int bit = (n>>i)&1;
+        ret = (bit+c)%2 + rec(i+1,rem,(bit+c)/2);
+        if(rem) ret = min(ret , (bit+1+c)%2 + rec(i+1,rem-1,(bit+c+1)/2));
+        return ret;
+    };
+    int ans = k + co(n) - rec(0,k,0);
+    cout<<ans<<ln;
 }
 
 signed main() {
@@ -68,6 +69,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

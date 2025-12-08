@@ -6,13 +6,13 @@ read -p "Enter number of problems (e.g. 4 for a.cpp to d.cpp): " num_problems
 
 # ----------- Create Folder -----------
 date_str=$(date +%Y-%m-%d)
-full_folder="${folder_name}_${date_str}"
+full_folder="${folder_name}"
 mkdir -p "$full_folder"
 cd "$full_folder" || exit 1
 
 # ----------- Create .cpp Files -----------
 for ((i = 0; i < num_problems; i++)); do
-    letter=$(printf "\\$(printf '%03o' $((97 + i)))")  # a=97
+    letter=$(printf "\\$(printf '%03o' $((65 + i)))")  # a=97
     cat <<EOF > "${letter}.cpp"
 #include <bits/stdc++.h>
 using namespace std;

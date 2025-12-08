@@ -34,32 +34,29 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    int n,s,f; cin>>n>>f>>s; s--,f--;
-    vector<vector<pair<int,int>>> g(n);
-    for(int i = 0;i < n ; i++){
-        for(int j = 0;j < n;  j++){
-            int x; cin>>x;
-            if(i == j || x == -1) continue;
-            g[i].push_back({j,x});
-        }
-    }
-
-    priority_queue<pair<int,int>,vec<pair<int,int>>,greater<>>q;
-    vi dist(n,1e15);
-    q.push({0,f});
-    dist[f] = 0;
-    while(!q.empty()){
-        auto [w,node] = q.top(); q.pop();
-        if(w != dist[node]) continue;
-        for(auto [i,cost] : g[node]){
-            if(w + cost < dist[i]){
-                dist[i] = w + cost;
-                q.push({w + cost,i});
+    int n,k; cin>>n>>k;
+    vi v(n); cin>>v;
+    set<int>st(all(v));
+    vi ans;
+    map<int,int>mp;
+    for(auto it : st) mp[it]++;
+    while (!st.empty()){
+        int mn = *st.begin();
+        ans.push_back(mn);
+    //    cout<<mn<<ln;
+        for(int mul = 1 ; mul*mn <= k ; mul++){
+            if(mp[mul*mn] == 0){
+         //       cout<<mn<<" "<<mul<<ln;
+                cout<<-1<<ln;
+                return;
             }
+            else st.erase(mul*mn);
         }
     }
-    if(dist[s] == 1e15) cout<<-1<<ln;
-    else cout<<dist[s]<<ln;
+    cout<<ans.size()<<ln;
+    for(auto &it : ans) cout<<it<<" ";
+    cout<<ln;
+
 }
 
 signed main() {
@@ -68,6 +65,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

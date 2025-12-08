@@ -34,32 +34,15 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    int n,s,f; cin>>n>>f>>s; s--,f--;
-    vector<vector<pair<int,int>>> g(n);
+    int n; cin>>n;
+    vi a(n),b(n); cin>>a>>b;
+    int mn = 0 , mx = 0;
     for(int i = 0;i < n ; i++){
-        for(int j = 0;j < n;  j++){
-            int x; cin>>x;
-            if(i == j || x == -1) continue;
-            g[i].push_back({j,x});
-        }
+        int mn1 = min({mn - a[i] , mx - a[i] , b[i] - mx , b[i] - mn}) ;
+        int mx1 = max({mn - a[i] , mx - a[i] , b[i] - mx , b[i] - mn}) ;
+        mn = mn1 , mx = mx1;
     }
-
-    priority_queue<pair<int,int>,vec<pair<int,int>>,greater<>>q;
-    vi dist(n,1e15);
-    q.push({0,f});
-    dist[f] = 0;
-    while(!q.empty()){
-        auto [w,node] = q.top(); q.pop();
-        if(w != dist[node]) continue;
-        for(auto [i,cost] : g[node]){
-            if(w + cost < dist[i]){
-                dist[i] = w + cost;
-                q.push({w + cost,i});
-            }
-        }
-    }
-    if(dist[s] == 1e15) cout<<-1<<ln;
-    else cout<<dist[s]<<ln;
+    cout<<mx<<ln;
 }
 
 signed main() {
@@ -68,6 +51,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
