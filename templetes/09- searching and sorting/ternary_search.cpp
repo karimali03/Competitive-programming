@@ -1,9 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-
 double calc(double x){
     return 2.0*x; // your calculations here
 }
@@ -39,8 +33,8 @@ int ternary_search(int l, int r) {
     
     int best_x = l;
     for (int x = l; x <= r; x++) {
-        if (calc(x) < calc(best_x)) best_x = x;
+        if (calc(x) > calc(best_x)) best_x = x;
     }
     
-    return best_x;  // Return the integer x that minimizes f(x)
+    return best_x;  // Return the integer x that maximize f(x)
 }
