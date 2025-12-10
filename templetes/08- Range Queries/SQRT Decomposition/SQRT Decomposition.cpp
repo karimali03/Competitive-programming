@@ -1,4 +1,3 @@
-
 /*
  Index-to-Block:
    - block_id = idx / block_size
@@ -6,37 +5,59 @@
    - block_start = block_id * block_size
    - block_end = min(n - 1, (block_id + 1) * block_size - 1)
 */
-struct Sqrt {
-	int block_size;
-	vector<int> nums;
-	vector<long long> blocks;
-	int n,nb;
-    pair<int,int> block_rng(int block){
-            return {block * block_size , min( n , (block+1) * block_size)};
+struct SQRT{
+    static const int B = 300;
+    vi val;
+    vector<pair<int,int>> blocks;
+
+    int n,nb;
+    // [l , r)
+    pair<int,int> blk_rng(int blk){ 
+        return { blk * B , min(n , (blk+1) * B  ) };
+    }  
+
+    SQRT(vi &v){
+        val = v;
+        n = v.size();
+        nb = ((n-1)/B)+1;
+        blocks = vector<pair<int,int>>(nb,pair<int,int>(-1,-1));
+        for(int i = 0;i < n ; i++){
+            auto cur = make_pair(v[i],i);
+            blocks[i/B] = max(blocks[i/B],cur);
+        }
     }
-     
-	Sqrt(int sqrtn, vector<int> &arr) : block_size(sqrtn), blocks(sqrtn, 0) {
-		nums = arr;
-		n = nums.size();
-        nb = ((n-1) / block_size) + 1;
-		for (int i = 0; i < nums.size(); i++) { blocks[i / block_size] += nums[i]; }
-	}
 
-	/** O(1) update to set nums[x] to v */
-	void update(int x, int v) {
-		blocks[x / block_size] -= nums[x];
-		nums[x] = v;
-		blocks[x / block_size] += nums[x];
-	}
+    void update(int x,int y){
+        auto rng = blk_rng(x/B);
+        val[x] = y;
+        for(int i = rng.first ; i  < rng.second ; i++){
+            auto cur = make_pair(val[i],i);
+            blocks[i/B] = max(blocks[i/B],cur);
+        }
+    }
 
-	/** O(sqrt(n)) query for sum of [0, r) */
-	long long query(int r) {
-		long long res = 0;
-		for (int i = 0; i < r / block_size; i++) { res += blocks[i]; }
-		for (int i = (r / block_size) * block_size; i < r; i++) { res += nums[i]; }
-		return res;
-	}
+    pair<int,int> query(int l,int r){
+        int x = l / B , y = r / B;
+        pair<int,int> ret = make_pair(-1,-1);
+        if(x == y){
+            for(int  i = l ; i <= r ; i++){
+                auto cur = make_pair(val[i],i);
+                ret = max(ret , cur);
+            }
+            return ret;
+        }
 
-	/** O(sqrt(n)) query for sum of [l, r) */
-	long long query(int l, int r) { return query(r) - query(l - 1); }
+        for(int i = l ; i < (x+1) * B ; i++){
+            auto cur = make_pair(val[i],i);
+            ret = max(ret , cur);
+        }
+        for(int i = x+1 ; i < y ; i++){
+            ret = max(ret , blocks[i]);
+        }
+        for(int i = y*B ; i <= r ; i++){
+            auto cur = make_pair(val[i],i);
+            ret = max(ret , cur);
+        }
+        return ret;
+    }
 };
