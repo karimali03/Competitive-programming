@@ -35,41 +35,44 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
+    int sum = n*(n+1)/2;
+    vii v(n,vi(n));
+    vii op;
+    for(int i = 0;i < n ; i++) op.push_back({1,i+1});
+    for(int i =0 ;i < n ; i++) for(int j = 0;j < n;  j++) v[i][j] = j+1;
+    int rem = n;
+    for(int j = 0;j < n; j++){
+        if((j+1)*n >= sum) break;
+        op.push_back({2,j+1}); rem--;
+        for(int i = 0; i < n ;i++) v[i][j] = i+1;
     }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
-        }
-        x.push_back(it);
-    }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
+    for(int i = n-1 ; i >= 0 && rem > 1;  i--){
+        int cur = 0;
+        int tag = sum - 1 + i+1;
+        f(j,0,n) cur += v[j][i];
+        if(tag > cur){
+            op.push_back({2,i+1});
+           f(j,0,n) v[j][i] = j+1;
+            rem--;
         }
     }
-    cout<<n-z+1<<ln;
+    if(rem){
+        op.push_back({1,1});
+        f(i,0,n) v[0][i] = i+1;
+    } 
+    cout<<"--*-\n";
+    f(i,0,n) cout<<v[i]<<ln;
+    cout<<"----\n";
+
+    int res = 0;
+    f(i,0,n) f(j,0,n) res += v[i][j];
+    cout<<res<<" ";
+    cout<<op.size()<<ln;
+    for(auto it : op){
+        cout<<it[0]<<" "<<it[1]<<" ";
+        f(i,1,n+1) cout<<i<<" ";
+        cout<<ln;
+    }
 }
 
 signed main() {

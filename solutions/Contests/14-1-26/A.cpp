@@ -35,41 +35,26 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
-    }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
+    map<char,char>id;
+    id['a'] = id['b'] = id['c'] = '2';
+    id['d'] = id['e'] = id['f'] = '3';
+    id['g'] = id['h'] = id['i'] = '4';
+    id['j'] = id['k'] = id['l'] = '5';
+    id['m'] = id['n'] = id['o'] = '6';
+    id['p'] = id['q'] = id['r'] = id['s'] = '7';
+    id['t'] = id['u'] = id['v'] = '8';
+    id['w'] = id['x'] = id['y'] = id['z'] = '9';
+    set<string>st;
+    for(int i = 0;i < n; i++){
+        string s; cin>>s;
+        string cur(7,'0');
+        for(int x = 0; x < 7 ; x++){
+            cur[x] = id[s[x]];
         }
-        x.push_back(it);
+        st.insert(cur);
     }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
-        }
-    }
-    cout<<n-z+1<<ln;
+    cout<<(int)st.size()<<ln;
+
 }
 
 signed main() {
@@ -78,7 +63,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+    
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

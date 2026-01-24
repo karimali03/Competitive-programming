@@ -35,41 +35,30 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
-    }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
+    vector<string>v(n); 
+    f(i,0,n) cin>>v;
+    sort(all(v),[](string &a,string &b){
+        int sa = a.size() , sb = b.size();
+        if(sa == sb){
+            for(int i = 0;i < sa ; i++){
+                if(a[i] != b[i]) return a[i] < b[i];
+            }
+            return true;
         }
-        x.push_back(it);
-    }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
+        return sa < sb;
+    });
+    auto calc = [](string a,string b){
+        int res = 0;
+        reverse(all(a)); reverse(all(b));
+        int sa = a.size() , sb = b.size();
+        for(int i = 0;i < max(sa,sb) ; i++){
+            int da = i >= sa ? 0 : a[i]-'0';
+            int db = i >= sb ? 0 : b[i]-'0';
+            res = res*10 + (da+db)%10;
         }
-    }
-    cout<<n-z+1<<ln;
+        return res;
+    };
+    cout<<calc(v[0],v[1])<<" "<<calc(v[n-2],v[n-1])<<ln;
 }
 
 signed main() {
@@ -78,7 +67,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+  
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

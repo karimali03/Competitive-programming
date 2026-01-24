@@ -33,43 +33,32 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+
+int ask(int i,int j){
+    cout<<"? "<<i<<" "<<j<<endl;
+    int x; cin>>x;
+    return x;
+}
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
+    int sus = -1;
+    set<int>st;
+    f(i,1,n+1) st.insert(i);
+    for(int i = 2 ; i <= n ; i +=2){
+        if(ask(i-1,i) != ask(i,i-1)) sus = i;
+    }
+    if(sus == -1){
+        cout<<"! "<<n<<endl;
         return;
     }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
-        }
-        x.push_back(it);
+    st.erase(sus); st.erase(sus-1);
+    int x = *st.begin();
+    if(ask(x,sus) != ask(sus,x)){
+            cout<<"! "<<sus<<endl;
+    }else{
+         cout<<"! "<<sus-1<<endl;
     }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
-        }
-    }
-    cout<<n-z+1<<ln;
+
 }
 
 signed main() {

@@ -33,43 +33,44 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
+const int MOD = 1e9+7;
+struct Matrix {
+    int rows, cols;
+    vector<vector<int>> a;
+    Matrix(){}; 
+    Matrix(int r, int c) : rows(r), cols(c), a(r, vector<int>(c)) {}
+ 
+    Matrix operator*(const Matrix &other) const {
+        assert(cols == other.rows); 
+        Matrix ret(rows, other.cols);
+        for (int i = 0; i < rows; i++) {
+            for (int k = 0; k < cols; k++) {
+                for (int j = 0; j < other.cols; j++) {
+                    (ret.a[i][j] += a[i][k] * other.a[k][j])%=MOD;
+                }
+            }
+        }
+        return ret;
+    }
+};
+ 
+Matrix expo(Matrix &x,int k){
+    Matrix ret(x.rows,x.cols);
+    f(i,0,x.rows) ret.a[i][i] = 1;
+    while(k > 0){
+        if(k & 1) ret = ret * x;
+        x = x * x;  k>>=1;
+    }
+    return ret;
+}
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
-    }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
-        }
-        x.push_back(it);
-    }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
-        }
-    }
-    cout<<n-z+1<<ln;
+    int n,k; cin>>n>>k;
+    k = min(n,k);
+    Matrix single(k,k);
+    for(int i = 0; i < k ; i++) single.a[0][i] = 1;
+    for(int i = 1; i < k ; i++) single.a[i][i-1] = 1;
+    Matrix res = expo(single,n);
+    cout<<res.a[0][0]<<ln;
 }
 
 signed main() {
@@ -78,7 +79,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
+   
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

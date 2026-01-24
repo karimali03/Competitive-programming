@@ -35,41 +35,13 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
+    bool vld = true;
+    for(int i = 0;i < n; i++){
+        int x,y,z; cin>>x>>y>>z;
+        if(x+y <= z || x+z <= y || y+z <= x) vld = false;
     }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
-        }
-        x.push_back(it);
-    }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
-   
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
-        }
-    }
-    cout<<n-z+1<<ln;
+    if(vld) YES;
+    else NO;
 }
 
 signed main() {
@@ -78,7 +50,6 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

@@ -49,6 +49,7 @@ bool checkPowerOfTwo(int x){
 int clearItoLSB(int num,int i){
     //  12345i678
    //   123450000
+   if(i < 0) return num;
    int mask = -1 << ( i + 1 );
    return num & mask;
 }
@@ -56,8 +57,13 @@ int clearItoLSB(int num,int i){
 int clearMSBtoI(int num,int i){
     // 1234i5678
     // 000005678
+    if(i < 0) return 0;
     int mask = (1 << i) - 1;
     return num & mask;
+}
+
+bool isSubset(int sub, int super) {
+    return (sub & super) == sub;
 }
 
 string binToStr(double num){

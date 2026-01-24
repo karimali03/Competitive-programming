@@ -34,42 +34,30 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 void solve(int test_case) {
-    int n; cin>>n;
-    vi v(n); cin>>v;
-    if(count(all(v),0) == 0){
-        cout<<n<<ln;
-        return;
-    }
-    bool done = false;
-    int z = 0;
-    vi x;
-    for(auto &it : v){
-        if(!it){
-            z++;
-            if(done) continue;
-            done = true;
-        }
-        x.push_back(it);
-    }
-    int sz = x.size();
-    map<int,int>frq;
-    vi mex(sz);
-    int cur = 0;
-    for(int i = sz-1 ; i >= 0 ; i--){
-        frq[x[i]]++;
-        while(frq[cur] > 0) cur++;
-        mex[i] = cur;
-    }
+    int n,m; cin>>n>>m;
+    vi a(n),b(n); cin>>a>>b;
+    vi idx(n);
+    iota(all(idx),0);
+    sort(all(idx),[&](int i,int j){
+        return a[i] > a[j];
+    });
+    int mx = 0;
    
-    int mn = 1e10;
-    for(int i = 0;i < sz-1 ; i++){
-        mn = min(mn,x[i]);
-        if(mn < mex[i+1]){
-            cout<<n-z<<ln;
-            return;
+    for(int i = 0;i < n ; i++){
+        int x = idx[i];
+        int k = a[x];
+        mx = max(mx , min( m/k , b[x]) * k );
+        if(i+1<n&& a[idx[i+1]] == k-1){
+            int prv_use = min(b[idx[i+1]] , m/(k-1));
+            int rem = m - prv_use * (k-1);
+            int k_use = min(rem/k , b[x]);
+            int r2 = rem - k_use * k;
+            int c = min({r2 , prv_use , b[x]-k_use});
+            int res = prv_use * (k-1) + k_use * k + c;
+            mx = max(mx , res);
         }
     }
-    cout<<n-z+1<<ln;
+    cout<<mx<<ln;
 }
 
 signed main() {
