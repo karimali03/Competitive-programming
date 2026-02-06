@@ -155,7 +155,27 @@ struct Dinic {
     }
 };
 
+
 void solve(int test_case) {
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    Dinic st;
+    int s = 0 , t = n+1;
+    st.init(s,t);
+    int good = 0;
+    for(int i = 1 ;i <= n ; i++){
+        if(v[i-1] > 0){
+            st.addEdge(i,t,v[i-1]);
+            good += v[i-1];
+        }else{
+            st.addEdge(s,i,-v[i-1]);
+        }
+        for(int j = i*2 ; j <= n ; j += i){
+            st.addEdge(i,j,INF);
+        }
+    }
+    int res = good - st.maxFlow();
+    cout<<res<<ln;
     
 }
 
@@ -165,7 +185,6 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }
