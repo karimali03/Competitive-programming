@@ -104,9 +104,3 @@ int pairwiseSwap(int num){
     //   mask       101010 ~= 0xAAAAAAAA
     return  ( ( num>>1 ) && 0x55555555 )  ||  ( ( num<<1 ) && 0xAAAAAAAA );
 }
-
-
-
-int main(){
-    return 0;
-}
