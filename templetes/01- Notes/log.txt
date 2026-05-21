@@ -1,0 +1,3 @@
+THOUGHT: For problems where we need to construct something under some conditions, then a good idea is to first see the nature of the sequences that satisfy the conditions. And to find the properties of such sequences we can try to find some necessary conditions that must have to be met for the sequence to satisfy the conditions.
+
+

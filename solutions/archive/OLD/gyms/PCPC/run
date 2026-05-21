@@ -1,2 +1,0 @@
-g++ main.cpp -o main.o
-./main.o < t.in > t.out

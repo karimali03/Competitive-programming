@@ -2,7 +2,6 @@
 
 # ================= CONFIGURATION =================
 ROOT_DIR=$(pwd)
-LOG_FILE="$ROOT_DIR/progress_log.csv"
 ARCHIVE_DIR="$ROOT_DIR/archive"
 # Change "code" to "xdg-open" or "nano" if you don't use VS Code
 EDITOR_CMD="code" 
@@ -13,10 +12,7 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Ensure Log file exists
-if [ ! -f "$LOG_FILE" ]; then
-    echo "Date,Action,Type,Name,Count_or_Note" > "$LOG_FILE"
-fi
+
 
 # ================= HELPER FUNCTIONS =================
 select_type() {
@@ -116,8 +112,6 @@ EOF
     echo "# $folder_name" > notes.md
     echo "Created: $(date)" >> notes.md
 
-    # Log
-    echo "$(date +%Y-%m-%d),Created,$TYPE,$folder_name,$num_problems problems" >> "$LOG_FILE"
 
     echo -e "${GREEN}✅ Created $folder_name in $TARGET_DIR${NC}"
     $EDITOR_CMD .
@@ -177,10 +171,7 @@ elif [ "$MODE" == "ARCHIVE" ]; then
             mv "$SRC_PATH" "$FINAL_DEST"
             
             echo -e "${GREEN}✅ Moved $folder_name to Archive.${NC}"
-            
-            # Log the archiving
-            read -p "Any quick note for log? (e.g. 'Solved 4/5'): " note
-            echo "$(date +%Y-%m-%d),Archived,$TYPE,$folder_name,$note" >> "$LOG_FILE"
+           
             break
         else
             echo "Invalid selection."

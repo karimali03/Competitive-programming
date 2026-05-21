@@ -32,3 +32,19 @@ void all_possible_sums(){
        }
     }
 }
+
+
+//  find the XOR sum from 1 to n
+ll Xor(ll n) {
+    switch (n % 4) {
+        case 0: return n;
+        case 1: return 1;
+        case 2: return n + 1;
+        case 3: return 0;
+    }
+    return 0; 
+}
+// get the XOR sum of the range [L, R]
+ll XorRange(ll L,ll R) {
+    return Xor(R) ^ Xor(L - 1);
+}

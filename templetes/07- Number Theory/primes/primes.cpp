@@ -25,17 +25,24 @@ vector<int>primes;
 
 
 // spf ( smallest prime factor )
-vector<int>spf(N+5);   
- void SPF(){   //  O(n*log(log(n)))
-    for(int i=1;i<=N;i++) spf[i]=i;
-
-     for(int i=2; i*i<=N; i++)
-    {
-        if(spf[i]==i)
-           for(int j=i*i; j<=N; j+=i)
-               if(spf[j]==j)   spf[j]=i;
-    }
- }
+int spf[N];
+int p[N]; // p[i] will store the total number of prime factors of i
+void SPF(){   //  O(n*log(log(n)))
+  // 1. Standard Sieve to find the Smallest Prime Factor (spf)
+      for (int i = 2; i < N; i++) spf[i] = i;
+      for (int i = 2; i * i < N; i++) {
+          if (spf[i] == i) {
+              for (int j = i * i; j < N; j += i) {
+                  if (spf[j] == j) spf[j] = i;
+              }
+          }
+      }
+      // 2. DP to count total prime factors
+      p[1] = 0;
+      for (int i = 2; i < N; i++) {
+          p[i] = p[i / spf[i]] + 1;
+      }
+}
 
 
 map<int,int> fast_fact(int n){   // O ( log(n) )

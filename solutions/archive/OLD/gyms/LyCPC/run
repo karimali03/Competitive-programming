@@ -1,3 +1,0 @@
-g++ main.cpp -o main.o
-time ./main.o < input.txt > output.txt
-

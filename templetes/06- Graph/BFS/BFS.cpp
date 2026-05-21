@@ -1,19 +1,16 @@
-vector<int> bfs(vii &v,int s){
-    int n = v.size();
+vector<int> bfs(vii &g,int s){
     queue<int>q;
     q.push(s);
-    vi vis(n); vis[s] = 1;
-    vi dist(n);
+    vi dist(n,-1);  dist[s] = 0;
     int lvl = 0;
     while(!q.empty()){
         int sz = q.size();
         while(sz--){
-            auto x = q.front();
-            dist[x] = lvl;
-            for(auto it : v[x]){
-                if(!vis[it]){
-                    vis[it] = 1;
+            auto x = q.front(); q.pop();
+            for(auto it : g[x]){
+                if(dist[it] == -1){
                     q.push(it);
+                    dist[it] = lvl+1;
                 }
             }
         }
