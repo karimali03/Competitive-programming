@@ -48,3 +48,29 @@ ll Xor(ll n) {
 ll XorRange(ll L,ll R) {
     return Xor(R) ^ Xor(L - 1);
 }
+
+
+// the number of submasks of $o$ that are less than or equal to $r$.
+int count_submasks(int num, int n) {
+    int ans = 0;
+    bool match = true;
+ 
+    for (int i = 30; i >= 0; i--) {
+        int v_bit = (num >> i) & 1;
+        int k_bit = (n >> i) & 1;
+        int p = __builtin_popcount(num & ((1 << i) - 1));
+ 
+        if (v_bit == 0) {
+            if (k_bit == 1) {
+                ans += (1 << p);
+                match = false;
+                break;
+            }
+        }
+        else
+            if (k_bit == 1)
+                ans += (1LL << p);
+    }
+ 
+    return ans + (match != 0);
+}
