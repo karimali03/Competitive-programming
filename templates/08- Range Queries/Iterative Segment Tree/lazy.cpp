@@ -1,5 +1,3 @@
- 
- 
 struct SegTree {
     int n, h;
     vector<long long> t; // Tree array
@@ -125,6 +123,8 @@ void solve(int test_case) {
     SegTree sg(n);
     sg.build();
     stack<int>stk;
+    // dp[i] min cost to partition len i into groups of len at most L with cost = max element in group
+    //  dp[i] = min dp[j] + max(i..j)  where j is the most left valid option
     for(int i = 0; i < n ; i++){
         // dp[i] = min( dp[j] + max(j+1 -> i) ) j = i-l -> i-1
         while(!stk.empty() && v[i] >= v[stk.top()]){
