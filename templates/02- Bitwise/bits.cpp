@@ -74,3 +74,20 @@ int count_submasks(int num, int n) {
  
     return ans + (match != 0);
 }
+
+
+
+// Counts occurrences of bit x being 1 in the range [0, n]
+int calc(int bit,int r){
+    if(r<=0) return 0;
+    int blk = (1ll << (bit+1));
+    int mid = blk >> 1ll;
+    int ret = ( (r+1) / blk) * mid;
+    int rem = (r+1) % blk;
+    if(rem > mid) ret += (rem - mid);
+    return ret; 
+}
+
+int get(int bit,int l,int r){
+    return calc(bit,r) - calc(bit,l-1);
+}
