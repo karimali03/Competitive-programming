@@ -33,39 +33,58 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-
-
-vector<int> prefix_function(string &s){
-    int n = s.size();
-    vector<int>pi(n);
-    int j = 0;
-    for(int i = 1;i < n ; i++){
-        while(j > 0 && s[i] != s[j]) j = pi[j-1]; 
-        if(s[i] == s[j]) j++;
-        pi[i] = j;
-    }
-    return pi;
+ld calc(ld r,ld angle){
+    ld ret = r * r * PI  * (angle / 360.0);
+    return ret;
 }
-
-const int M = 998244353;
 void solve(int test_case) {
-    int n,k; cin>>n>>k;
-    string s; cin>>s;
-    auto pi = prefix_function(s);
-    vi opt;
-    for(int i = 0 ; i < n ; i++){
-        if(pi[i] == 0) opt.push_back(i+1);
-    }    
-
-    vi dp(k+1);
-    dp[0] = 1;
-    for(int i = 1 ; i <= k ; i++){
-        for(auto &it : opt){
-            if(it > i) break;
-            (dp[i] += dp[i-it])%=M;
+    int R,a,s; cin>>R>>a>>s;
+    if(a == 360){
+        cout<<fixed<<setprecision(7)<<calc((ld)R,180.0)<<" "<<calc((ld)R,90.0)<<ln;
+        return;
+    }
+    ld l = (ld)s - (ld)(a / 2.0);
+    ld r = (ld)s + (ld)(a / 2.0);
+    ld sea = 0.0;
+    ld nile = 0.0;
+    // 0 180 
+    if(l >= 0.0 && r <= 180.0){
+        sea = calc((ld)R,(ld)a);
+    }
+    // 270 0
+    else if(l >= 270.0 && r <= 360.0){
+        nile = calc((ld)R,(ld)a);
+    }
+    else if(l >= 180.0 && r <= 270.0);
+    else{
+        if(r > 360.0){
+            ld angSea = min<ld>(180.0 , r - 360.0);
+            ld angNile = min<ld>(90.0 , 360.0 - l);
+            sea += calc(R,angSea);
+            nile += calc(R,angNile);
+        }else if( l <= 0.0){
+            ld angNile = min<ld>(90.0 , -l );
+            ld angSea = min<ld>(180.0 , r );
+            sea += calc(R,angSea);
+            nile += calc(R,angNile);
+        }
+        if(l <= 180.0 && r >= 180.0){
+            ld angSea = min<ld>(180.0 , 180.0 - l);
+            sea += calc(R,angSea);
+        }
+        if(l <= 270.0 && r >= 270.0){
+            ld angNile = min<ld>(90.0 , r - 270.0 );
+            nile += calc(R,angNile);
+        }
+        if( l < -90.0){
+            nile += calc(R,90.0);
         }
     }
-    cout<<dp[k]<<ln;
+
+    nile = min<ld>(nile,calc(R,90.0));
+    sea = min<ld>(sea , calc(R,180.0));
+    cout<<fixed<<setprecision(7)<<sea<<" "<<nile<<ln;
+
 }
 
 signed main() {
@@ -74,7 +93,6 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
-    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

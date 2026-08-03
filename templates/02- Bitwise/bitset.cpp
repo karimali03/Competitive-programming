@@ -1,33 +1,35 @@
-#include <bitset>
-#include <iostream>
-using namespace std;
+// Return possible subset sums for nonnegative values up to maxSum.
+// possible[s] is 1 iff some subset has sum s. Sums above maxSum are ignored.
+// Use this when maxSum is known at runtime or you do not want a template.
+vector<char> possibleSubsetSums(const vector<int>& values, int maxSum) {
+    assert(maxSum >= 0);
+    vector<char> possible(maxSum + 1, 0);
+    possible[0] = 1;
 
-int main()
-{
-    // declaring an uninitialized bitset object
-    bitset<8> uninitializedBitset; // Uninitialized bitset: 00000000
+    for (int value : values) {
+        assert(value >= 0);
+        for (int sum = maxSum; sum >= value; --sum) {
+            possible[sum] = possible[sum] || possible[sum - value];
+        }
+    }
 
-    // initialization with decimal number
-    bitset<8> decimalBitset(15); // Initialized with decimal: 00001111
+    return possible;
+}
 
-    // initialization with binary string
-    bitset<8> stringBitset(string("1111")); // Initialized with string: 00001111
+// Return true if target can be formed as a subset sum of nonnegative values.
+// Use when you only need one target answer.
+bool canMakeSubsetSum(const vector<int>& values, int target) {
+    assert(target >= 0);
+    return possibleSubsetSums(values, target)[target];
+}
 
-    /*
-        set()        Set the bit value at the given index to 1.
-        reset()      Set the bit value at a given index to 0.
-        flip()       Flip the bit value at the given index.
-        count()      Count the number of set bits.
-        test()       Returns the boolean value at the given index.
-        any()        Checks if any bit is set.
-        none()       Checks if none bit is set.
-        all()        Check if all bit is set.
-        size()       Returns the size of the bitset.
-        to_string()  Converts bitset to std::string.
-        to_ulong()   Converts bitset to unsigned long.
-        to_ullong()  Converts bitset to unsigned long long.
-             
-    */
-
-    return 0;
+// Return all reachable subset sums up to maxSum.
+// Use when you need to iterate over the actual sums instead of checking a bit.
+vector<int> listSubsetSums(const vector<int>& values, int maxSum) {
+    vector<char> possible = possibleSubsetSums(values, maxSum);
+    vector<int> sums;
+    for (int sum = 0; sum <= maxSum; ++sum) {
+        if (possible[sum]) sums.push_back(sum);
+    }
+    return sums;
 }

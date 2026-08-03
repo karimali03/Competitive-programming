@@ -36,7 +36,7 @@ struct DSU {
         int cost = dif[y] - dif[x] + w;
 
 
-        if (sz[x] > sz[y]) {
+        if (sz[rx] > sz[ry]) {
             par[ry] = rx;
             dif[ry] = -cost; 
             sz[rx] += sz[ry];

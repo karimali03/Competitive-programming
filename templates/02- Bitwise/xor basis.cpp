@@ -1,54 +1,69 @@
-// Use XOR Basis when:
-// 1. You are allowed to XOR subsets of given values (e.g., toggle, flip, or combine elements)
-// 2. You need to check if a target value/vector can be formed using XORs
-// 3. You're trying to count how many distinct values can be formed by XORs
-// 4. You're given operations that are reversible via XOR (flip i and j, toggle paths, etc.)
-// 5. You want the minimal representation of reachable XOR values
-/*
-Any set of more than k numbers in which all numbers are in the range 
-that can be represented using at most k bits, 
-must contain a subset with XOR = 0.
-k+1 number -> xor zero
-*/
+// XOR linear basis for nonnegative ll values.
+// Use it for subset-XOR reachability, maximum XOR, and dependency detection.
 struct XorBasis {
-    static const int BITS = 64; // use 30 for 1e9 values, 64 for full long long
-    long long basis[BITS] = {}; // basis[i] has the vector with i-th bit as the highest set
-    int inserted = 0;
-    // Insert a number into the basis
-    void insert(long long x) {
-        inserted++;
-        for (int i = BITS - 1; i >= 0; --i) {
-            if (!(x & (1LL << i))) continue;
-            if (!basis[i]) {
-                basis[i] = x;
-                return;
+    static const int BITS = 63;
+
+    // basis[i] is 0 or has highest set bit i.
+    ll basis[BITS]{};
+    int rankValue = 0;
+    int insertedValue = 0;
+
+    // Insert x into the basis.
+    // Returns true if x was independent and increased the rank.
+    bool insert(ll x) {
+        assert(x >= 0);
+        ++insertedValue;
+        for (int bit = BITS - 1; bit >= 0; --bit) {
+            if (((x >> bit) & 1LL) == 0) continue;
+            if (basis[bit] == 0) {
+                basis[bit] = x;
+                ++rankValue;
+                return true;
             }
-            x ^= basis[i];
+            x ^= basis[bit];
         }
+        return false;
     }
 
-    // Check if a number can be formed from the basis
-    bool canMake(long long x) {
-        for (int i = BITS - 1; i >= 0; --i) {
-            if (x & (1LL << i)) {
-                if (!basis[i]) return false;
-                x ^= basis[i];
-            }
+    // Return true if x can be formed by XORing some inserted subset.
+    // Use for target reachability questions.
+    bool canMake(ll x) const {
+        assert(x >= 0);
+        for (int bit = BITS - 1; bit >= 0; --bit) {
+            if (((x >> bit) & 1LL) == 0) continue;
+            if (basis[bit] == 0) return false;
+            x ^= basis[bit];
         }
         return true;
     }
 
-    // Optional: Get the size of the basis (how many independent vectors)
-    int size() {
-        int res = 0;
-        for (int i = 0; i < BITS; ++i)
-            res += (basis[i] != 0);
-        return res;
+    // Return the maximum subset XOR, optionally starting from an existing value.
+    // Use for maximum XOR obtainable from any subset.
+    ll maxXor(ll start = 0) const {
+        assert(start >= 0);
+        ll ans = start;
+        for (int bit = BITS - 1; bit >= 0; --bit) {
+            ans = max(ans, ans ^ basis[bit]);
+        }
+        return ans;
     }
-    
-    // xor zero non empty 
-    bool XrZero() const {
-        return size() < inserted;
+
+    // Return the number of independent vectors.
+    // Distinct subset XOR values are 2^rank().
+    int rank() const {
+        return rankValue;
+    }
+
+    // Return true if a nonempty subset has XOR 0.
+    // This means at least one inserted value was dependent.
+    bool hasNonEmptyZeroSubset() const {
+        return rankValue < insertedValue;
+    }
+
+    // Return number of distinct subset XOR values, capped at LLONG_MAX.
+    // Exact answer is 2^rank and only overflows ll when rank >= 63.
+    ll distinctValueCount() const {
+        if (rankValue >= 63) return LLONG_MAX;
+        return 1LL << rankValue;
     }
 };
-
