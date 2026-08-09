@@ -2,7 +2,7 @@ struct dsu {
     vector<int> size, par;
     int cc;
 
-    dsu(int n) : cc(n), size(n, 1), par(n) {
+    dsu(int n) :size(n, 1), par(n),cc(n) {
         for (int i = 0; i < n; i++) par[i] = i;
     }
 

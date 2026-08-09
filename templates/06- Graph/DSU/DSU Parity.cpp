@@ -3,7 +3,7 @@ struct DSU {
     vector<int> sz, par, dif;
     int cc; 
 
-    DSU(int n) : cc(n), sz(n, 1), par(n), dif(n, 0) {
+    DSU(int n) :sz(n, 1), par(n), dif(n, 0),cc(n) {
         for (int i = 0; i < n; i++) par[i] = i;
     }
 

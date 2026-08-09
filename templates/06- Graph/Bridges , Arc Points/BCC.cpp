@@ -1,3 +1,209 @@
+/*
+    ================= BICONNECTED COMPONENTS / BLOCK-CUT TREE =================
+
+    This is the VERTEX version of bridge-tree decomposition.
+
+    Edge failure:
+        bridges -> 2-edge-connected components -> Bridge Tree
+
+    Vertex failure:
+        articulation points -> biconnected components -> Block-Cut Tree
+
+
+    ================= WHEN TO USE =================
+
+    Use this for an UNDIRECTED graph when the problem involves:
+
+        - articulation / cut vertices
+        - removing ONE vertex
+        - vertices that must appear on every u -> v path
+        - connectivity after vertex failure
+        - biconnected components (BCC)
+        - compressing graph around articulation points
+        - path queries involving unavoidable vertices
+
+
+    ================= CORE IDEA =================
+
+    A BCC is a maximal part of the graph where no single
+    internal vertex removal disconnects that part.
+
+    Example:
+
+        triangle ----- x ----- triangle
+                      ^
+                 articulation
+
+    BCCs overlap at articulation points!
+
+        BCC1 = {a,b,x}
+        BCC2 = {x,c,d}
+
+    Unlike 2-ECC:
+        every normal vertex belongs to one BCC,
+        but an articulation point can belong to MULTIPLE BCCs.
+
+    Because of this, we cannot simply compress every BCC
+    into one node like the bridge tree.
+
+
+    ================= BLOCK-CUT TREE =================
+
+    Create two kinds of nodes:
+
+        1) Articulation nodes
+        2) BCC / block nodes
+
+    Connect:
+
+        articulation x ---- block B
+
+    iff x belongs to B.
+
+    Example:
+
+        BCC1 -- x -- BCC2 -- y -- BCC3
+
+    This graph is a TREE (or forest if original graph is disconnected).
+
+
+    ================= OUTPUT OF THIS TEMPLATE =================
+
+    ArticPoints ap(n, g);
+
+    ap.is_cutpoint[v]
+        -> true if v is an articulation point
+
+
+    ap.BCC
+        -> list of biconnected components
+
+        for(auto &comp : ap.BCC) {
+            for(int v : comp) {
+                ...
+            }
+        }
+
+
+    ap.tree
+        -> Block-Cut Tree
+
+
+    ap.id[v]
+        -> where original vertex v lives in the Block-Cut Tree
+
+        if v is NOT articulation:
+            id[v] = its BCC/block node
+
+        if v IS articulation:
+            id[v] = v
+
+
+    ================= LOW-LINK RULE =================
+
+    For DFS tree edge:
+
+        u -> v
+
+    if:
+
+        low[v] >= in[u]
+
+    then v's subtree cannot reach an ancestor of u
+    without passing through u.
+
+    Therefore u separates this BCC.
+
+    Compare:
+
+        low[v] >  in[u]  => edge (u,v) is a BRIDGE
+
+        low[v] >= in[u]  => u is a BCC boundary /
+                             possible ARTICULATION POINT
+
+
+    ROOT SPECIAL CASE:
+
+        DFS root is articulation iff it has >= 2 DFS children.
+
+
+    ================= COMMON USAGE =================
+
+    1) Is v an articulation point?
+
+        if(ap.is_cutpoint[v]) ...
+
+
+    2) Connectivity after removing one vertex
+
+        Think:
+            articulation points
+                ->
+            Block-Cut Tree
+
+
+    3) Which vertices are unavoidable between u and v?
+
+        Convert:
+
+            u -> ap.id[u]
+            v -> ap.id[v]
+
+        Then look at the path between them in the Block-Cut Tree.
+
+        Articulation nodes on this path are the vertices
+        that separate u and v.
+
+
+    4) Number of articulation points separating u and v
+
+        Block-Cut Tree
+            +
+        LCA / prefix sums
+
+        Give articulation-node weight = 1,
+        block-node weight = 0,
+        then query path sum.
+
+
+    5) Many connectivity queries involving vertex deletion
+
+        Original graph can be complicated.
+
+        Compress into Block-Cut Tree
+            ->
+        solve tree path / subtree queries.
+
+
+    ================= MEMORY TRIGGER =================
+
+    If statement says:
+
+        "remove one VERTEX"
+        "cut vertex"
+        "articulation point"
+        "vertex that every path must pass through"
+        "remain connected after vertex failure"
+
+    THINK:
+
+        ARTICULATION POINT
+               ↓
+              BCC
+               ↓
+         BLOCK-CUT TREE
+               ↓
+         TREE ALGORITHM
+
+
+    VERY IMPORTANT COMPARISON:
+
+        EDGE problem:
+            Bridge Tree
+
+        VERTEX problem:
+            Block-Cut Tree
+*/
 struct ArticPoints {
     int n, timer;
     vector<vector<int>> adj;

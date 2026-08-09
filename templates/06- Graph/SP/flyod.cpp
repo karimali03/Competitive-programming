@@ -10,112 +10,164 @@ Time Complexity: O(n^3)
 Negative cycle detection:  for (int i = 0; i < n; ++i)  if (dist[i][i] < 0) → Negative cycle exists
 
 */
-#define ll long long
-#define vec vector
-#define f(i, a, b) for(int i = a; i < b; i++)
+using ll = long long;
 
-const int N = 505;
-const int INF = 1e9;
-int v[N][N];
-int path[N][N]; // For recursive "Intermediate Node" reconstruction
-int par[N][N];  // For iterative "Predecessor" reconstruction (Negative Cycles)
-int n, m;
+const ll INF = (ll)4e18;
 
-void flyod() {
-    // 1. Initialize
-    f(i, 0, n) {
-        f(j, 0, n) {
-            v[i][j] = INF;
-            path[i][j] = -1;
-            par[i][j] = -1; // -1 means no path
-        }
-        v[i][i] = 0;
-        par[i][i] = -1; 
-    }
+struct Floyd {
+    int n;
 
-    // 2. Read Input
-    for (int i = 0; i < m; i++) {
-        int a, b, c; cin >> a >> b >> c; a--, b--;
-        if (c < v[a][b]) {
-            v[a][b] = v[b][a] = c;
-            
-            // Recursive setup
-            path[a][b] = path[b][a] = -1; 
-            
-            // Iterative setup: Predecessor of b (coming from a) is a
-            par[a][b] = a; 
-            par[b][a] = b;
-        }
-    }
+    vector<vector<ll>> dist;
+    vector<vector<int>> nxt;
 
-    // 3. Floyd-Warshall
-    for (int k = 0; k < n; k++) {
+    Floyd(int n) : n(n) {
+        dist.assign(n, vector<ll>(n, INF));
+        nxt.assign(n, vector<int>(n, -1));
+
         for (int i = 0; i < n; i++) {
-            if(v[i][k] == INF) continue;
-            for (int j = 0; j < n; j++) {
-                if(v[k][j] == INF) continue;
-                
-                int relax = v[i][k] + v[k][j];
-                if (relax < v[i][j]) {
-                    v[i][j] = relax;
-                    
-                    // Update Intermediate Node (for recursive build_path)
-                    path[i][j] = k; 
-                    
-                    // Update Predecessor (for iterative neg_cyc)
-                    // The node before 'j' on path i->...->k->j is the same 
-                    // as the node before 'j' on path k->j.
-                    par[i][j] = par[k][j]; 
+            dist[i][i] = 0;
+            nxt[i][i] = i;
+        }
+    }
+
+    // Directed edge u -> v
+    void add_directed(int u, int v, ll w) {
+        // Important when multiple edges exist
+        if (w < dist[u][v]) {
+            dist[u][v] = w;
+            nxt[u][v] = v;
+        }
+    }
+
+    // Undirected edge u <-> v
+    void add_undirected(int u, int v, ll w) {
+        add_directed(u, v, w);
+        add_directed(v, u, w);
+    }
+
+    // O(n^3)
+    void run() {
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+
+                if (dist[i][k] == INF)
+                    continue;
+
+                for (int j = 0; j < n; j++) {
+
+                    if (dist[k][j] == INF)
+                        continue;
+
+                    ll nd = dist[i][k] + dist[k][j];
+
+                    if (nd < dist[i][j]) {
+                        dist[i][j] = nd;
+
+                        // first node after i
+                        // on the path i -> ... -> k -> ... -> j
+                        nxt[i][j] = nxt[i][k];
+                    }
                 }
             }
         }
     }
-}
 
-// Recursive Path Reconstruction (Standard paths)
-void build_path(int from, int to, vector<int> &road) {
-    if (path[from][to] == -1) {
-        road.push_back(from);
-        if (from != to) road.push_back(to);
-        return;
+    // Is v reachable from u?
+    bool reachable(int u, int v) {
+        return dist[u][v] != INF;
     }
-    int mid = path[from][to];
-    build_path(from, mid, road);
-    road.pop_back();  
-    build_path(mid, to, road);
-}
 
-// Iterative Negative Cycle Reconstruction
-vector<int> neg_cyc(){
-  for(int i = 0; i < n; i++){
-        // If distance from i to i is negative, i is part of a negative cycle
-        if(v[i][i] < 0){
-           vector<int> ret;
-           int cur = i;
-           
-           // We trace backwards: i <- pred <- pred ... <- i
-           while(true){
-              ret.push_back(cur);
-              
-              // Move to the predecessor of 'cur' on the path starting from 'i'
-              cur = par[i][cur]; 
-              
-              // Validations to prevent infinite loops if par is broken
-              if(cur == -1) return {}; // Should not happen if logic is correct
-              
-              // If we returned to start (i) and have a real path
-              if(cur == i && ret.size() > 1){
-                  ret.push_back(i); // Close the loop
-                  break;
-              }
-              // Safety break
-              if((int)ret.size() > 2 * n) break;
-           }
-           
-           // Since we traced backwards, we reverse to get forward order
-           reverse(ret.begin(), ret.end());
-           return ret;
+    // Any negative cycle anywhere?
+    bool has_neg_cycle() {
+        for (int i = 0; i < n; i++)
+            if (dist[i][i] < 0)
+                return true;
+
+        return false;
+    }
+
+    // Is there a negative cycle that can affect u -> v?
+    bool neg_cycle_between(int u, int v) {
+        for (int k = 0; k < n; k++) {
+            if (
+                dist[u][k] != INF &&
+                dist[k][k] < 0 &&
+                dist[k][v] != INF
+            ) {
+                return true;
+            }
         }
-  }
-  return {};
-}
+
+        return false;
+    }
+
+    /*
+        Path u -> v
+
+        {} if:
+        - unreachable
+        - shortest path isn't finite because
+          a negative cycle affects u -> v
+    */
+    vector<int> get_path(int u, int v) {
+        if (nxt[u][v] == -1)
+            return {};
+
+        if (neg_cycle_between(u, v))
+            return {};
+
+        vector<int> path = {u};
+
+        while (u != v) {
+            u = nxt[u][v];
+
+            if (u == -1)
+                return {};
+
+            path.push_back(u);
+        }
+
+        return path;
+    }
+
+    /*
+        Mark all pairs affected by negative cycles as -INF.
+
+        After calling:
+
+        dist[u][v] == INF
+            -> unreachable
+
+        dist[u][v] == -INF
+            -> arbitrarily small due to negative cycle
+
+        otherwise
+            -> finite shortest distance
+
+        IMPORTANT:
+        Call this AFTER run().
+        Usually call it only after you're done using nxt/path reconstruction.
+    */
+    void mark_neg_inf() {
+        vector<int> neg;
+
+        for (int k = 0; k < n; k++) {
+            if (dist[k][k] < 0)
+                neg.push_back(k);
+        }
+
+        for (int k : neg) {
+            for (int i = 0; i < n; i++) {
+                if (dist[i][k] == INF)
+                    continue;
+
+                for (int j = 0; j < n; j++) {
+                    if (dist[k][j] == INF)
+                        continue;
+
+                    dist[i][j] = -INF;
+                }
+            }
+        }
+    }
+};
