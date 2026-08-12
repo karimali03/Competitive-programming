@@ -68,4 +68,32 @@ struct Manacher {
             return d2[mid] >= len/2;
         }
     }
+    
+    
+    vector<int> cnt_start(){
+        vi cnt(n+1);
+
+        for(int i = 0; i < n; i++){
+            cnt[i-d1[i]+1]++; cnt[i+1]--;
+            cnt[i-d2[i]]++;   cnt[i]--;
+        }
+        for(int i = 1; i < n; i++)
+            cnt[i] += cnt[i-1];
+        cnt.pop_back();
+        return cnt;
+    }
+    
+    
+    vector<int> cnt_end(){
+        vi cnt(n+1);
+
+        for(int i = 0; i < n; i++){
+            cnt[i]++;  cnt[i+d1[i]]--;
+            cnt[i]++;  cnt[i+d2[i]]--;
+        }
+        for(int i = 1; i < n; i++)
+            cnt[i] += cnt[i-1];
+        cnt.pop_back();
+        return cnt;
+    }
 };
