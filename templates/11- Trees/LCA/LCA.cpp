@@ -2,18 +2,19 @@ struct LCA{
     int LOG,n;
     vii g,up;
     vi lvl;
-    LCA(vii &g) :g(g){
+    LCA(vii &g,int root) :g(g){
         n = g.size();
         LOG = __lg(n) + 1;
         up = vii(n,vi(LOG));
         lvl = vi(n);
+        build(root);
     };
 
-    void build(){
-        up[0][0] = 0;
+    void build(int root){
+        up[root][0] = 0;
         lvl[0] = 0;
-        for(int i = 1 ; i < LOG; i++) up[0][i] = 0;
-        dfs(0,0);
+        for(int i = 1 ; i < LOG; i++) up[root][i] = 0;
+        dfs(root,root);
     }
 
     void dfs(int u,int p){
@@ -51,4 +52,13 @@ struct LCA{
         int lc = lca(u,v);
         return lvl[u] + lvl[v] - 2 * lvl[lc];
     }
+    
+    
+    // Check if node z is on path from x to y
+    bool on_path(int x, int y, int z) {
+		int l = lca(x, y);
+		int l1 = lca(x, z);
+		int l2 = lca(y, z);
+		return z == l || (l1 == z && l2 == l) || (l2 == z && l1 == l);
+    };
 };

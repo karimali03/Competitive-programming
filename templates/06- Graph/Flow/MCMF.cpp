@@ -1,203 +1,225 @@
-using T = long long;
-const T inf = 1LL << 61;
+/*
+Min-Cost Max-Flow
 
+Edge:
+    capacity + cost
+
+Residual reverse edge:
+    cap = 0
+    cost = -cost
+
+Goal:
+    min_cost_flow(s,t)
+        -> maximum flow with minimum cost
+
+    min_cost_flow(s,t,K)
+        -> send exactly K with minimum cost
+        -> impossible if flow < K
+
+Dijkstra uses reduced cost:
+    cost + pot[u] - pot[v]
+
+Negative original costs:
+    initialize potentials with Bellman-Ford
+
+Maximize profit:
+    cost = -profit
+
+Useful for:
+    - weighted assignment
+    - K assignments with minimum cost
+    - transportation with costs
+    - capacities + costs
+    - maximize profit under flow constraints
+
+edge_flow(u,id):
+    original capacity - residual capacity
+*/
+using ll = long long;
 struct MCMF {
-  struct edge {
-    int u, v;
-    T cap, cost;
-    int id;
-    edge(int _u, int _v, T _cap, T _cost, int _id)
-      : u(_u), v(_v), cap(_cap), cost(_cost), id(_id) {}
-  };
-
-  int n, s, t, mxid;
-  T flow, cost;
-  vector<vector<int>> g;
-  vector<edge> e;
-  vector<T> d, potential, flow_through, edge_flow;
-  vector<int> par;
-  bool neg;
-
-  MCMF() {}
-  MCMF(int _n) {
-    n = _n + 10;
-    g.assign(n, vector<int>());
-    neg = false;
-    mxid = 0;
-  }
-
-  void add_edge(int u, int v, T cap, T cost, int id = -1, bool directed = true) {
-    if (cost < 0) neg = true;
-    g[u].push_back(e.size());
-    e.push_back(edge(u, v, cap, cost, id));
-    g[v].push_back(e.size());
-    e.push_back(edge(v, u, 0, -cost, -1));
-    mxid = max(mxid, id);
-    if (!directed) add_edge(v, u, cap, cost, -1, true);
-  }
-
-  bool dijkstra() {
-    par.assign(n, -1);
-    d.assign(n, inf);
-    priority_queue<pair<T, T>, vector<pair<T, T>>, greater<>> q;
-    d[s] = 0;
-    q.push({0, s});
-    while (!q.empty()) {
-      int u = q.top().second;
-      T nw = q.top().first;
-      q.pop();
-      if (nw != d[u]) continue;
-      for (int id : g[u]) {
-        int v = e[id].v;
-        T cap = e[id].cap;
-        T w = e[id].cost + potential[u] - potential[v];
-        if (d[u] + w < d[v] && cap > 0) {
-          d[v] = d[u] + w;
-          par[v] = id;
-          q.push({d[v], v});
-        }
-      }
-    }
-    for (int i = 0; i < n; i++) {
-      if (d[i] < inf) d[i] += (potential[i] - potential[s]);
-    }
-    for (int i = 0; i < n; i++) {
-      if (d[i] < inf) potential[i] = d[i];
-    }
-    return d[t] != inf;
-  }
-
-  T send_flow(int v, T cur) {
-    if (par[v] == -1) return cur;
-    int id = par[v];
-    int u = e[id].u;
-    T w = e[id].cost;
-    T f = send_flow(u, min(cur, e[id].cap));
-    cost += f * w;
-    e[id].cap -= f;
-    e[id ^ 1].cap += f;
-    return f;
-  }
-
-  pair<T, T> solve(int _s, int _t, T goal = inf) {
-    s = _s;
-    t = _t;
-    flow = 0, cost = 0;
-    potential.assign(n, 0);
-    if (neg) {
-      d.assign(n, inf);
-      d[s] = 0;
-      bool relax = true;
-      for (int i = 0; i < n && relax; i++) {
-        relax = false;
-        for (int u = 0; u < n; u++) {
-          for (int id : g[u]) {
-            int v = e[id].v;
-            T cap = e[id].cap, w = e[id].cost;
-            if (d[v] > d[u] + w && cap > 0) {
-              d[v] = d[u] + w;
-              relax = true;
-            }
-          }
-        }
-      }
-      for (int i = 0; i < n; i++) if (d[i] < inf) potential[i] = d[i];
-    }
-    while (flow < goal && dijkstra()) {
-      flow += send_flow(t, goal - flow);
-    }
-
-    // track flow through original edges
-    flow_through.assign(mxid + 10, 0);
-    edge_flow.assign(e.size(), 0); // ✅ initialize class member, not local
-    for (int i = 0; i < (int)e.size(); i += 2) {
-      edge_flow[i] = e[i ^ 1].cap; // flow sent = reverse edge capacity
-      if (e[i].id >= 0)
-        flow_through[e[i].id] = e[i ^ 1].cap;
-    }
-
-    return {flow, cost};
-  }
-
-  // ✅ Safely reconstruct flow paths
-  vector<vector<int>> getAllFlowPaths(int s, int t) {
-    vector<vector<int>> paths;
-    vector<T> used_flow = edge_flow; // copy to modify
-    vector<int> ptr(n, 0);
-
-    function<bool(int, vector<int>&)> dfs = [&](int u, vector<int>& path) {
-      if (u == t) return true;
-      for (int &i = ptr[u]; i < (int)g[u].size(); ++i) {
-        int id = g[u][i];
-        int v = e[id].v;
-        if (used_flow[id] > 0) {
-          used_flow[id]--;
-          path.push_back(v);
-          if (dfs(v, path)) return true;
-          path.pop_back();
-          used_flow[id]++;
-        }
-      }
-      return false;
+    struct Edge {
+        int to, rev;
+        ll cap, cost, org;
     };
 
-    fill(ptr.begin(), ptr.end(), 0);
+    int n;
+    bool has_neg = false;
+    vector<vector<Edge>> g;
+
+    MCMF(int n) : n(n), g(n) {}
+
+    // returns edge index inside g[u]
+    int add_edge(int u, int v, ll cap, ll cost) {
+        int id = g[u].size();
+
+        g[u].push_back({v, (int)g[v].size(), cap, cost, cap});
+        g[v].push_back({u, id, 0, -cost, 0});
+
+        if (cost < 0) has_neg = true;
+
+        return id;
+    }
+
+    ll edge_flow(int u, int id) {
+        return g[u][id].org - g[u][id].cap;
+    }
+
+    pair<ll,ll> min_cost_flow(int s, int t, ll need = 4e18) {
+        const ll INF = 4e18;
+
+        vector<ll> pot(n), dist(n);
+        vector<int> pv(n), pe(n);
+
+        // Initial potentials if original negative edges exist
+        if (has_neg) {
+            fill(pot.begin(), pot.end(), INF);
+            pot[s] = 0;
+
+            for (int it = 0; it < n - 1; it++) {
+                bool changed = false;
+
+                for (int u = 0; u < n; u++) {
+                    if (pot[u] == INF) continue;
+
+                    for (auto &e : g[u]) {
+                        if (e.cap && pot[e.to] > pot[u] + e.cost) {
+                            pot[e.to] = pot[u] + e.cost;
+                            changed = true;
+                        }
+                    }
+                }
+
+                if (!changed) break;
+            }
+
+            for (auto &x : pot)
+                if (x == INF) x = 0;
+        }
+
+        ll flow = 0, cost = 0;
+
+        while (flow < need) {
+            fill(dist.begin(), dist.end(), INF);
+            dist[s] = 0;
+
+            priority_queue<
+                pair<ll,int>,
+                vector<pair<ll,int>>,
+                greater<pair<ll,int>>
+            > pq;
+
+            pq.push({0, s});
+
+            while (!pq.empty()) {
+                auto [d, u] = pq.top();
+                pq.pop();
+
+                if (d != dist[u]) continue;
+
+                for (int i = 0; i < (int)g[u].size(); i++) {
+                    auto &e = g[u][i];
+
+                    if (!e.cap) continue;
+
+                    ll nd = d + e.cost + pot[u] - pot[e.to];
+
+                    if (nd < dist[e.to]) {
+                        dist[e.to] = nd;
+                        pv[e.to] = u;
+                        pe[e.to] = i;
+                        pq.push({nd, e.to});
+                    }
+                }
+            }
+
+            if (dist[t] == INF) break;
+
+            for (int v = 0; v < n; v++)
+                if (dist[v] < INF)
+                    pot[v] += dist[v];
+
+            ll f = need - flow;
+
+            for (int v = t; v != s; v = pv[v])
+                f = min(f, g[pv[v]][pe[v]].cap);
+
+            for (int v = t; v != s; v = pv[v]) {
+                Edge &e = g[pv[v]][pe[v]];
+
+                cost += f * e.cost;
+
+                e.cap -= f;
+                g[e.to][e.rev].cap += f;
+            }
+
+            flow += f;
+        }
+
+        return {flow, cost};
+    }
+};
+
+
+// decompose the final s-t flow into paths
+vector<pair<vector<int>, ll>> get_flow_paths(int s, int t) {
+    vector<vector<ll>> used(n);
+
+    for (int u = 0; u < n; u++) {
+        used[u].resize(g[u].size());
+
+        for (int i = 0; i < (int)g[u].size(); i++) {
+            auto &e = g[u][i];
+
+            if (e.org)
+                used[u][i] = e.org - e.cap;
+        }
+    }
+
+    vector<pair<vector<int>, ll>> paths;
+
     while (true) {
-      vector<int> path = {s};
-      if (!dfs(s, path)) break;
-      paths.push_back(path);
+        vector<int> par(n, -1), pe(n, -1);
+        queue<int> q;
+
+        par[s] = s;
+        q.push(s);
+
+        while (!q.empty() && par[t] == -1) {
+            int u = q.front();
+            q.pop();
+
+            for (int i = 0; i < (int)g[u].size(); i++) {
+                auto &e = g[u][i];
+
+                if (used[u][i] > 0 && par[e.to] == -1) {
+                    par[e.to] = u;
+                    pe[e.to] = i;
+                    q.push(e.to);
+                }
+            }
+        }
+
+        if (par[t] == -1) break;
+
+        ll f = 4e18;
+
+        for (int v = t; v != s; v = par[v])
+            f = min(f, used[par[v]][pe[v]]);
+
+        vector<int> path;
+
+        for (int v = t;; v = par[v]) {
+            path.push_back(v);
+            if (v == s) break;
+        }
+
+        reverse(path.begin(), path.end());
+
+        for (int v = t; v != s; v = par[v])
+            used[par[v]][pe[v]] -= f;
+
+        paths.push_back({path, f});
     }
 
     return paths;
-  }
-
-  // ✅ Optional: Return both path and flow along it
-  vector<pair<vector<int>, T>> getAllFlowPathsWithAmounts(int s, int t) {
-    vector<pair<vector<int>, T>> result;
-    vector<T> used_flow = edge_flow;
-    vector<int> ptr(n, 0);
-
-    function<T(int, vector<int>&)> dfs = [&](int u, vector<int>& path) -> T {
-      if (u == t) return inf;
-      for (int &i = ptr[u]; i < (int)g[u].size(); ++i) {
-        int id = g[u][i];
-        int v = e[id].v;
-        if (used_flow[id] > 0) {
-          path.push_back(v);
-          T f = dfs(v, path);
-          if (f > 0) {
-            T push = min(f, used_flow[id]);
-            used_flow[id] -= push;
-            return push;
-          }
-          path.pop_back();
-        }
-      }
-      return 0;
-    };
-
-    fill(ptr.begin(), ptr.end(), 0);
-    while (true) {
-      vector<int> path = {s};
-      T f = dfs(s, path);
-      if (f == 0) break;
-      result.emplace_back(path, f);
-    }
-
-    return result;
-  }
-
-  // --- Min Cut ---
-  vector<bool> vis;
-
-  void dfs_residual(int u) {
-    vis[u] = true;
-    for (int id : g[u]) {
-      int v = e[id].v;
-      if (!vis[v] && e[id].cap > 0) {
-        dfs_residual(v);
-      }
-    }
-  }
-};
-
+}

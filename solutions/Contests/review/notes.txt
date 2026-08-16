@@ -1,0 +1,6 @@
+bipartive matching = min vertex cover 
+min vertex is (unreachable LEFT + reachable RIGHT)
+------------------------
+edge_flow > 0 there is flow here 
+so we choosed this edge in solution
+-------------------------

@@ -3,7 +3,7 @@ using namespace std;
 
 #define ln "\n"
 #define ll long long
-#define ld  double
+#define ld long double
 #define ull unsigned long long
 #define vec vector
 #define vi vector<int>
@@ -16,6 +16,7 @@ using namespace std;
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 #define PI acos(-1)
+#define int long long
 #define YES cout<<"YES\n"
 #define NO cout<<"NO\n"
 #define NA cout<<"-1\n"
@@ -32,64 +33,158 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-const int N = 505;
-const int M = 15;
-int n,k,s,h;
-array<ld,4> v[N];
 
-ld P(int g,int d){
-    // g+1 / (days + 2)
-    return (ld)(g+1) / (ld)(d + 2);
-}
+struct Biconnected {
+    int n, timer;
+    vector<vector<pair<int,int>>> adj; // {to, edge_id}
+    vector<pair<int,int>> edges;       // edges[id] = {u,v}
 
+    vector<int> tin, low;
+    vector<bool> is_cutpoint;
 
-ld cur[N][M][M]{};
-ld nxt[N][M][M]{};
-void solve(int test_case) {
-    cin>>n>>k>>s>>h;
-    for(int i = 0;i < n ; i++){
-        for(int j = 0;j < 4 ; j++) cin>>v[i][j];
+    vector<vector<int>> BCC; // edge IDs inside each BCC
+    vector<int> st;          // edge stack
+
+    // Block-Cut Tree
+    vector<vector<int>> tree;
+    vector<int> id;          // original vertex -> BCT node
+    int bct_n;
+
+    Biconnected(int n, vector<pair<int,int>> &ed) : n(n), edges(ed) {
+        int m = edges.size();
+
+        adj.assign(n, {});
+        for(int i = 0; i < m; i++) {
+            auto [u,v] = edges[i];
+            adj[u].push_back({v,i});
+            adj[v].push_back({u,i});
+        }
+
+        tin.assign(n, 0);
+        low.assign(n, 0);
+        is_cutpoint.assign(n, false);
+        id.assign(n, -1);
+        timer = 0;
+
+        // Find articulation points + edge-BCCs
+        for(int i = 0; i < n; i++) {
+            if(!tin[i])
+                dfs(i, -1);
+        }
+
+        build_tree();
     }
-    for(int g = 0; g <= n ; g++){
-        for(int hr = 0; hr < h ; hr++){
-            for(int bat = 0; bat <= k ; bat++){
-                nxt[g][hr][bat] = 1.0;
+
+    void dfs(int u, int parent_edge) {
+        tin[u] = low[u] = ++timer;
+        int children = 0;
+
+        for(auto [v, eid] : adj[u]) {
+            if(eid == parent_edge) continue;
+
+            if(!tin[v]) {
+                children++;
+                st.push_back(eid);
+
+                dfs(v, eid);
+
+                low[u] = min(low[u], low[v]);
+
+                if(low[v] >= tin[u]) {
+                    if(parent_edge != -1)
+                        is_cutpoint[u] = true;
+
+                    vector<int> comp;
+
+                    while(true) {
+                        int e = st.back();
+                        st.pop_back();
+
+                        comp.push_back(e);
+
+                        if(e == eid) break;
+                    }
+
+                    BCC.push_back(comp);
+                }
+            }
+            else if(tin[v] < tin[u]) {
+                // back edge to ancestor
+                st.push_back(eid);
+                low[u] = min(low[u], tin[v]);
             }
         }
+
+        if(parent_edge == -1 && children > 1)
+            is_cutpoint[u] = true;
     }
-    
-    for(int i = n-1 ; i >= 0 ; i--){
-        memset(cur,0,sizeof(cur));
-        for(int g = 0; g <= i ; g++){
-            ld p = P(g,i);
-            for(int hr = 0; hr < h ; hr++){
-                for(int bat = 0 ; bat <= k ; bat++){
-                    // hide
-                    ld ch1 = (1 - p) * nxt[g][hr+1][bat] + p * nxt[g+1][hr+1][bat];
-                    // battery
-                    ld ch2 = (1 - p) * v[i][0] * (1 - v[i][3]) * nxt[g][hr+1][min(k,bat+1)];
-                    ch2 += (1 - p) * (1 - v[i][0]) * (1 - v[i][3]) * nxt[g][hr+1][bat];
-                    if(bat >= 2){
-                        ch2 += (1-p) * v[i][0] * v[i][3] * nxt[g][hr+1][bat-1];
-                        ch2 += (1-p) * (1-v[i][0]) * v[i][3] * nxt[g][hr+1][bat-2];
-                    }
-                    // food
-                    ld ch3 = (1-p) * v[i][1] * (1-v[i][2]) * (1 - v[i][3]) * nxt[g][0][bat];
-                    ch3 += (1-p) * (1-v[i][1]) * (1-v[i][3]) * nxt[g][hr+1][bat];
-                    if(bat >= 2){
-                        ch3 += (1-p) * v[i][1] * (1-v[i][2]) * v[i][3] * nxt[g][0][bat-2];
-                        ch3 += (1-p) * (1-v[i][1]) * v[i][3] * nxt[g][hr+1][bat-2];
-                    }
-                    cur[g][hr][bat] = max<ld>({ch1,ch2,ch3});
+
+    void build_tree() {
+        // 0..n-1 reserved for articulation vertices
+        tree.resize(n + BCC.size());
+        bct_n = n;
+
+        for(auto &comp : BCC) {
+            int block = bct_n++;
+
+            vector<int> vertices;
+
+            for(int eid : comp) {
+                auto [u,v] = edges[eid];
+                vertices.push_back(u);
+                vertices.push_back(v);
+            }
+
+            sort(vertices.begin(), vertices.end());
+            vertices.erase(unique(vertices.begin(), vertices.end()), vertices.end());
+
+            for(int u : vertices) {
+                if(is_cutpoint[u]) {
+                    tree[u].push_back(block);
+                    tree[block].push_back(u);
+                    id[u] = u;
+                }
+                else {
+                    id[u] = block;
                 }
             }
         }
-        swap(cur,nxt);
-    }
 
-    ld res = nxt[0][0][s];
-    cout<<fixed<<setprecision(10)<<res<<ln;
+        // isolated vertices
+        for(int u = 0; u < n; u++) {
+            if(id[u] == -1) {
+                int block = bct_n++;
+                tree.push_back({});
+                id[u] = block;
+            }
+        }
+    }
+};
+void solve(int test_case) {
+    int n,m; cin>>n>>m;
+    vector<pair<int,int>>edgs(m);
+    for(int i =0 ;i < m ; i++){
+        int x,y; cin>>x>>y; x--,y--;
+        edgs[i] = {x,y};
+    }
+    Biconnected b(n,edgs);
+    vi ret;
+    for(auto &cmp : b.BCC){
+        set<int>st;
+        for(auto &it : cmp){
+            auto [x,y] = edgs[it];
+            st.insert(x); st.insert(y);
+        }
+        if((int)st.size() == (int)cmp.size()){
+            for(auto &it : cmp) ret.push_back(it);
+        }
+    }
+    sort(all(ret));
+    cout<<(int)ret.size()<<ln;
+    for(auto &it : ret) cout<<it+1<<" ";
+    cout<<ln;
 }
+
 signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);

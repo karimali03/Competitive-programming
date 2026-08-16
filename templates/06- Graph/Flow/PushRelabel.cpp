@@ -1,156 +1,268 @@
-// O(v^3) , O(V^2 * E)
-const int MAXV = 1005;
-const int INF = 1e17;
+/*
+Push-Relabel — Max Flow
+
+Idea:
+    allow temporary excess flow at vertices
+
+excess[v]:
+    incoming - outgoing
+
+height[v]:
+    flow can push only:
+        height[u] = height[v] + 1
+
+push:
+    send min(excess[u], residual capacity)
+
+relabel:
+    height[u] =
+        1 + min(height[v])
+    over residual neighbors
+
+Initialization:
+    height[S] = n
+    saturate all edges from S
+
+Answer:
+    excess[T]
+
+Use:
+    alternative to Dinic
+    often strong on dense/heavy max-flow graphs
+*/
+using ll = long long;
 
 struct PushRelabel {
     struct Edge {
         int to, rev;
-        int cap, flow;
+        ll cap, org;
     };
 
-    vector<Edge> adj[MAXV];
-    int excess[MAXV], height[MAXV];
-    int n, s, t;
+    int n;
+    vector<vector<Edge>> g;
+    vector<ll> excess;
+    vector<int> height, ptr;
+    vector<bool> active;
+    queue<int> q;
 
-    void init(int _n, int _s, int _t) {
-        n = _n; s = _s; t = _t;
-        for (int i = 0; i < n; ++i)
-            adj[i].clear();
+    PushRelabel(int n)
+        : n(n), g(n), excess(n), height(n),
+          ptr(n), active(n) {}
+
+    int add_edge(int u, int v, ll cap) {
+        int id = g[u].size();
+
+        g[u].push_back({v, (int)g[v].size(), cap, cap});
+        g[v].push_back({u, id, 0, 0});
+
+        return id;
     }
 
-    void addEdge(int u, int v, int cap, bool directed = true) {
-        adj[u].push_back({v, (int)adj[v].size(), cap, 0});
-        adj[v].push_back({u, (int)adj[u].size() - 1, directed ? 0 : cap, 0});
+    ll edge_flow(int u, int id) {
+        return g[u][id].org - g[u][id].cap;
     }
 
     void push(int u, Edge &e) {
-        int v = e.to;
-        int d = min(excess[u], e.cap - e.flow);
-        if (height[u] == height[v] + 1 && d > 0) {
-            e.flow += d;
-            adj[v][e.rev].flow -= d;
-            excess[u] -= d;
-            excess[v] += d;
+        if (!excess[u] || !e.cap ||
+            height[u] != height[e.to] + 1)
+            return;
+
+        ll f = min(excess[u], e.cap);
+
+        e.cap -= f;
+        g[e.to][e.rev].cap += f;
+
+        excess[u] -= f;
+        excess[e.to] += f;
+
+        if (!active[e.to] && excess[e.to] > 0) {
+            active[e.to] = true;
+            q.push(e.to);
         }
     }
 
     void relabel(int u) {
-        int d = INF;
-        for (Edge &e : adj[u])
-            if (e.cap > e.flow)
-                d = min(d, height[e.to]);
-        if (d < INF)
-            height[u] = d + 1;
+        int mn = INT_MAX;
+
+        for (auto &e : g[u])
+            if (e.cap)
+                mn = min(mn, height[e.to]);
+
+        if (mn != INT_MAX)
+            height[u] = mn + 1;
     }
 
     void discharge(int u) {
         while (excess[u] > 0) {
-            bool pushed = false;
-            for (Edge &e : adj[u]) {
-                if (e.cap > e.flow && height[u] == height[e.to] + 1) {
-                    push(u, e);
-                    pushed = true;
-                    if (excess[u] == 0) break;
+            if (ptr[u] == (int)g[u].size()) {
+                relabel(u);
+                ptr[u] = 0;
+                continue;
+            }
+
+            Edge &e = g[u][ptr[u]];
+
+            if (e.cap && height[u] == height[e.to] + 1)
+                push(u, e);
+            else
+                ptr[u]++;
+        }
+    }
+
+    ll max_flow(int s, int t) {
+        fill(excess.begin(), excess.end(), 0);
+        fill(height.begin(), height.end(), 0);
+        fill(ptr.begin(), ptr.end(), 0);
+        fill(active.begin(), active.end(), false);
+
+        while (!q.empty()) q.pop();
+
+        height[s] = n;
+        active[s] = active[t] = true;
+
+        // saturate edges from source
+        for (auto &e : g[s]) {
+            if (!e.cap) continue;
+
+            ll f = e.cap;
+
+            e.cap -= f;
+            g[e.to][e.rev].cap += f;
+
+            excess[s] -= f;
+            excess[e.to] += f;
+
+            if (e.to != t && !active[e.to]) {
+                active[e.to] = true;
+                q.push(e.to);
+            }
+        }
+
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+
+            active[u] = false;
+            discharge(u);
+
+            if (excess[u] > 0 && !active[u]) {
+                active[u] = true;
+                q.push(u);
+            }
+        }
+
+        return excess[t];
+    }
+
+    // ---------------- Flow Paths ----------------
+
+    // Decompose s->t flow into {path, amount}
+    // Doesn't modify the actual graph.
+    vector<pair<vector<int>, ll>>
+    get_flow_paths(int s, int t) {
+        vector<vector<ll>> used(n);
+
+        for (int u = 0; u < n; u++) {
+            used[u].resize(g[u].size());
+
+            for (int i = 0; i < (int)g[u].size(); i++) {
+                auto &e = g[u][i];
+
+                if (e.org)
+                    used[u][i] = e.org - e.cap;
+            }
+        }
+
+        vector<pair<vector<int>, ll>> paths;
+
+        while (true) {
+            vector<int> par(n, -1), pe(n, -1);
+            queue<int> q;
+
+            par[s] = s;
+            q.push(s);
+
+            while (!q.empty() && par[t] == -1) {
+                int u = q.front();
+                q.pop();
+
+                for (int i = 0; i < (int)g[u].size(); i++) {
+                    auto &e = g[u][i];
+
+                    if (used[u][i] > 0 && par[e.to] == -1) {
+                        par[e.to] = u;
+                        pe[e.to] = i;
+                        q.push(e.to);
+                    }
                 }
             }
-            if (!pushed) relabel(u);
-        }
-    }
 
-    int maxFlow() {
-        fill(excess, excess + n, 0);
-        fill(height, height + n, 0);
-        height[s] = n;
+            if (par[t] == -1)
+                break;
 
-        for (Edge &e : adj[s]) {
-            e.flow = e.cap;
-            adj[e.to][e.rev].flow = -e.cap;
-            excess[e.to] += e.cap;
-            excess[s] -= e.cap;
-        }
+            ll f = 4e18;
 
-        vector<int> list;
-        for (int i = 0; i < n; ++i)
-            if (i != s && i != t) list.push_back(i);
+            for (int v = t; v != s; v = par[v])
+                f = min(f, used[par[v]][pe[v]]);
 
-        int p = 0;
-        while (p < (int)list.size()) {
-            int u = list[p];
-            int oldHeight = height[u];
-            discharge(u);
-            if (height[u] > oldHeight) {
-                rotate(list.begin(), list.begin() + p, list.begin() + p + 1);
-                p = 0;
-            } else {
-                ++p;
+            vector<int> path;
+
+            for (int v = t;; v = par[v]) {
+                path.push_back(v);
+                if (v == s) break;
             }
+
+            reverse(path.begin(), path.end());
+
+            for (int v = t; v != s; v = par[v])
+                used[par[v]][pe[v]] -= f;
+
+            paths.push_back({path, f});
         }
 
-        return accumulate(adj[s].begin(), adj[s].end(), 0LL, [](int sum, Edge &e) {
-            return sum + e.flow;
-        });
-    }
-
-    vector<vector<int>> paths;
-
-    bool dfs_path(int u, vector<int>& path, vector<bool>& vis) {
-        if (u == t) {
-            paths.push_back(path);
-            return true;
-        }
-        vis[u] = true;
-        for (auto &e : adj[u]) {
-            if (e.flow > 0 && !vis[e.to]) {
-                path.push_back(e.to);
-                e.flow--; // mark flow unit used
-                if (dfs_path(e.to, path, vis)) return true;
-                path.pop_back();
-                e.flow++; // backtrack
-            }
-        }
-        return false;
-    }
-
-    vector<vector<int>> getAllFlowPaths() {
-        paths.clear();
-        while (true) {
-            vector<int> path = {s};
-            vector<bool> vis(n, false);
-            if (!dfs_path(s, path, vis)) break;
-        }
         return paths;
     }
 
+    // ---------------- Min Cut ----------------
 
-    vector<bool> vis;
+    // vertices on source side of minimum cut
+    vector<bool> min_cut_side(int s) {
+        vector<bool> vis(n);
+        queue<int> q;
 
-    void dfs_min_cut(int u) {
-        vis[u] = true;
-        for (auto &e : adj[u]) {
-            if (!vis[e.to] && e.cap > e.flow) { // Residual capacity exists
-                dfs_min_cut(e.to);
-            }
-        }
-    }
+        vis[s] = true;
+        q.push(s);
 
-    vector<pair<int, int>> getMinCut() {
-        vis.assign(n, false);
-        dfs_min_cut(s);
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
 
-        vector<pair<int, int>> cut;
-        for (int u = 0; u < n; ++u) {
-            if (!vis[u]) continue;
-            for (auto &e : adj[u]) {
-                if (!vis[e.to] && e.cap > 0) {
-                    cut.emplace_back(u, e.to); // Edge from reachable to unreachable
+            for (auto &e : g[u]) {
+                if (e.cap && !vis[e.to]) {
+                    vis[e.to] = true;
+                    q.push(e.to);
                 }
             }
         }
-        return cut;
+
+        return vis;
     }
 
+    // original edges crossing S-side -> T-side
+    vector<pair<int,int>> getMinCut(int s) {
+        auto vis = min_cut_side(s);
 
-    
+        vector<pair<int,int>> cut;
+
+        for (int u = 0; u < n; u++) {
+            if (!vis[u]) continue;
+
+            for (auto &e : g[u]) {
+                if (e.org && !vis[e.to])
+                    cut.push_back({u, e.to});
+            }
+        }
+
+        return cut;
+    }
 };
-
-
