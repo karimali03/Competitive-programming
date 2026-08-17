@@ -1,3 +1,16 @@
+/*
+x & m == x -> x ⊆ m -> subset SOS
+
+x | m == x -> x ⊇ m -> superset SOS
+
+x & m == 0 -> x ⊆ ~m -> subset SOS on complement
+
+x & m != 0 -> total - disjoint
+
+"exact mask" after cumulative counting  → REV
+FREQ -> SOS -> Function(SOS) -> REV
+FREQ -> SOS -> 2^(SOS) -> REV (count all subsets)
+*/
 const int LOG = 20;
 const int MX = (1<<LOG);
 int dp1[MX]{};
@@ -34,4 +47,3 @@ void REV2(){
         }
     }
 }
-

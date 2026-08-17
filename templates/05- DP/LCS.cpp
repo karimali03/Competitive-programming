@@ -1,9 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <string>
-
-using namespace std;
-
 // Function to fill the DP table
 vector<vector<int>> LCS(const string& s1, const string& s2) {
     int m = s1.length();

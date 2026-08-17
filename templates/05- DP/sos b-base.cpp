@@ -1,3 +1,14 @@
+/*
+"for every digit/component:
+     x[d] <= y[d]"
+          ↓
+     base-B subset SOS
+
+"for every digit/component:
+     x[d] >= y[d]"
+          ↓
+     base-B superset SOS
+*/
 // The number of dimensions (e.g., 6 digits)
 const int DIMS = 6;
 // The base of each dimension (e.g., 10 for digits 0-9)

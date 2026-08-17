@@ -34,146 +34,110 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 }
 
 
-struct MCMF {
-    struct Edge {
-        int to, rev;
-        ll cap, cost, org;
-    };
-
+struct BIT {
     int n;
-    bool has_neg = false;
-    vector<vector<Edge>> g;
+    vector<long long> bit;
 
-    MCMF(int n) : n(n), g(n) {}
+    BIT(int n = 0) : n(n), bit(n + 1) {}
 
-    // returns edge index inside g[u]
-    int add_edge(int u, int v, ll cap, ll cost) {
-        int id = g[u].size();
-
-        g[u].push_back({v, (int)g[v].size(), cap, cost, cap});
-        g[v].push_back({u, id, 0, -cost, 0});
-
-        if (cost < 0) has_neg = true;
-
-        return id;
+    void add(int i, long long val) {
+        for (; i <= n; i += i & -i)
+            bit[i] += val;
     }
 
-    ll edge_flow(int u, int id) {
-        return g[u][id].org - g[u][id].cap;
+    long long sum(int i) {
+        long long res = 0;
+        for (; i > 0; i -= i & -i)
+            res += bit[i];
+        return res;
     }
 
-    pair<ll,ll> min_cost_flow(int s, int t, ll need = 4e18) {
-        const ll INF = 4e18;
+    long long sum(int l, int r) {
+        return sum(r) - sum(l - 1);
+    }
 
-        vector<ll> pot(n), dist(n);
-        vector<int> pv(n), pe(n);
+    // first index with prefix sum >= k
+    int kth(long long k) {
+        int pos = 0;
 
-        // Initial potentials if original negative edges exist
-        if (has_neg) {
-            fill(pot.begin(), pot.end(), INF);
-            pot[s] = 0;
+        for (int pw = 1 << __lg(n); pw; pw >>= 1) {
+            int nxt = pos + pw;
 
-            for (int it = 0; it < n - 1; it++) {
-                bool changed = false;
-
-                for (int u = 0; u < n; u++) {
-                    if (pot[u] == INF) continue;
-
-                    for (auto &e : g[u]) {
-                        if (e.cap && pot[e.to] > pot[u] + e.cost) {
-                            pot[e.to] = pot[u] + e.cost;
-                            changed = true;
-                        }
-                    }
-                }
-
-                if (!changed) break;
+            if (nxt <= n && bit[nxt] < k) {
+                pos = nxt;
+                k -= bit[nxt];
             }
-
-            for (auto &x : pot)
-                if (x == INF) x = 0;
         }
 
-        ll flow = 0, cost = 0;
+        return pos + 1;
+    }
+};
 
-        while (flow < need) {
-            fill(dist.begin(), dist.end(), INF);
-            dist[s] = 0;
 
-            priority_queue<
-                pair<ll,int>,
-                vector<pair<ll,int>>,
-                greater<pair<ll,int>>
-            > pq;
+struct OrderedSum {
+    int n;
+    BIT cnt, sum;
+    vector<long long> val; // val[i] = actual value of compressed index i
 
-            pq.push({0, s});
+    OrderedSum(vector<long long> values)
+        : n(values.size()), cnt(n), sum(n), val(n + 1) {
 
-            while (!pq.empty()) {
-                auto [d, u] = pq.top();
-                pq.pop();
+        for (int i = 1; i <= n; i++)
+            val[i] = values[i - 1];
+    }
 
-                if (d != dist[u]) continue;
+    // add/remove occurrence at compressed index i
+    // delta = +1 insert, -1 erase
+    void add(int i, int delta) {
+        cnt.add(i, delta);
+        sum.add(i, val[i] * delta);
+    }
 
-                for (int i = 0; i < (int)g[u].size(); i++) {
-                    auto &e = g[u][i];
+    // number of existing elements
+    long long size() {
+        return cnt.sum(n);
+    }
 
-                    if (!e.cap) continue;
+    // sum of smallest k existing elements
+    long long first_k_sum(long long k) {
+        if (k <= 0) return 0;
 
-                    ll nd = d + e.cost + pot[u] - pot[e.to];
+        int i = cnt.kth(k);
 
-                    if (nd < dist[e.to]) {
-                        dist[e.to] = nd;
-                        pv[e.to] = u;
-                        pe[e.to] = i;
-                        pq.push({nd, e.to});
-                    }
-                }
-            }
+        long long beforeCnt = cnt.sum(i - 1);
+        long long beforeSum = sum.sum(i - 1);
 
-            if (dist[t] == INF) break;
+        long long need = k - beforeCnt;
 
-            for (int v = 0; v < n; v++)
-                if (dist[v] < INF)
-                    pot[v] += dist[v];
-
-            ll f = need - flow;
-
-            for (int v = t; v != s; v = pv[v])
-                f = min(f, g[pv[v]][pe[v]].cap);
-
-            for (int v = t; v != s; v = pv[v]) {
-                Edge &e = g[pv[v]][pe[v]];
-
-                cost += f * e.cost;
-
-                e.cap -= f;
-                g[e.to][e.rev].cap += f;
-            }
-
-            flow += f;
-        }
-
-        return {flow, cost};
+        return beforeSum + need * val[i];
     }
 };
 
 void solve(int test_case) {
     int n,m; cin>>n>>m;
-    MCMF st(n+m+2);
-    int S = n+m , T = S+1;
-    for(int i = 0;i < n ; i++) st.add_edge(S,i,1,0);
-    for(int i = 0;i < m ; i++) st.add_edge(i+n,T,1,0);
-    int sum = 0;
-    for(int i = 0;i < n ; i++){
-        int k; cin>>k;
-        sum += k;
-        for(int j = 0;j < k; j++){
-            int a; cin>>a; a--;
-            st.add_edge(i,a+n,1,j+1);
-        }
+    vi v(n); cin>>v;
+    vi val = v;
+    vector<pair<int,int>>op(m);
+    for(int i = 0;i < m ; i++){
+        cin>>op[i].first>>op[i].second;
+        val.push_back(op[i].second);
     }
-    auto res = st.min_cost_flow(S,T,min(n,m));
-    cout<<res.first<<" "<< sum - res.second<<ln;
+    sort(all(val));
+    val.erase(unique(all(val)),val.end());
+    OrderedSum st(val);
+    for(int i = 0;i <n ; i++){
+        int idx = lower_bound(all(val),v[i]) - val.begin() + 1;
+        st.add(idx,1);
+    }
+    for(int i =0 ;i < m ; i++){
+        auto [a,b] = op[i];
+        cout<<st.first_k_sum(a)<<" ";
+        int prv = st.cnt.kth(a);
+        int idx = lower_bound(all(val),b) - val.begin() + 1;
+        st.add(prv,-1);
+        st.add(idx,1);
+    }
+    cout<<ln;
 }
 
 signed main() {
@@ -182,6 +146,7 @@ signed main() {
     cout.tie(nullptr);
 
     int t = 1;
+    cin >> t;
     for (int i = 1; i <= t; i++) {
         solve(i);
     }

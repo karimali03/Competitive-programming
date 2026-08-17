@@ -16,11 +16,9 @@ Konig:
 
 After max matching:
     alternating BFS from unmatched LEFT
-
     L -> R : unmatched edges
     R -> L : matched edges
-
-    MVC = unvisited LEFT + visited RIGHT
+    Min Vertex Cover = unvisited LEFT + visited RIGHT
 
 Bipartite MIS:
     |L| + |R| - max_matching

@@ -7,16 +7,6 @@
        - Time: Better than general case, often around O(min(V^2, E sqrt(V)))
     - Dinic is best for sparse graphs or unit capacity cases
     - For large capacities or dense graphs, use Push-Relabel or Capacity Scaling
-    Uses:
-        - Max Flow
-        - Min Cut
-        - Bipartite Matching
-        - Edge-disjoint paths: cap = 1
-        - Vertex-disjoint paths: split v -> (vin -> vout)
-        - Multiple sources/sinks: super source/sink
-
-    Min Cut after maxflow:
-        reachable from S using residual cap > 0 = S side
 */
 
 using ll = long long;
