@@ -3,8 +3,9 @@
 # ================= CONFIGURATION =================
 ROOT_DIR=$(pwd)
 ARCHIVE_DIR="$ROOT_DIR/archive"
+
 # Change "code" to "xdg-open" or "nano" if you don't use VS Code
-EDITOR_CMD="code" 
+EDITOR_CMD="code"
 
 # Colors
 GREEN='\033[0;32m'
@@ -13,31 +14,59 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 
-
 # ================= HELPER FUNCTIONS =================
+
 select_type() {
     echo -e "${BLUE}Select Category:${NC}"
+
     options=("Contest" "Gym" "Sheet" "Misc")
+
     select opt in "${options[@]}"; do
-        case $opt in
-            "Contest") TARGET_DIR="Contests"; TYPE="Contest"; return 0 ;;
-            "Gym")     TARGET_DIR="Gyms";     TYPE="Gym";     return 0 ;;
-            "Sheet")   TARGET_DIR="Sheets";   TYPE="Sheet";   return 0 ;;
-            "Misc")    TARGET_DIR="Misc";     TYPE="Misc";    return 0 ;;
-            *) echo "Invalid option";;
+        case "$opt" in
+            "Contest")
+                TARGET_DIR="Contests"
+                TYPE="Contest"
+                return 0
+                ;;
+            "Gym")
+                TARGET_DIR="Gyms"
+                TYPE="Gym"
+                return 0
+                ;;
+            "Sheet")
+                TARGET_DIR="Sheets"
+                TYPE="Sheet"
+                return 0
+                ;;
+            "Misc")
+                TARGET_DIR="Misc"
+                TYPE="Misc"
+                return 0
+                ;;
+            *)
+                echo "Invalid option"
+                ;;
         esac
     done
 }
 
+
 # ================= MAIN MENU =================
-echo -e "----------------------------------------"
-echo -e "  🚀 ${BLUE}CP Manager & Archive Tool${NC} "
-echo -e "----------------------------------------"
+
+echo "----------------------------------------"
+echo -e "  🚀 ${BLUE}CP Manager & Archive Tool${NC}"
+echo "----------------------------------------"
+
 PS3="Choose an action: "
-main_options=("Create New" "Open Existing" "Archive (Finished)")
+
+main_options=(
+    "Create New"
+    "Open Existing"
+    "Archive (Finished)"
+)
 
 select action in "${main_options[@]}"; do
-    case $action in
+    case "$action" in
         "Create New")
             MODE="CREATE"
             break
@@ -50,131 +79,195 @@ select action in "${main_options[@]}"; do
             MODE="ARCHIVE"
             break
             ;;
-        *) echo "Invalid option $REPLY";;
+        *)
+            echo "Invalid option $REPLY"
+            ;;
     esac
 done
+
 
 # ================= LOGIC HANDLERS =================
 
 # ---------------- [1] CREATE NEW ----------------
-if [ "$MODE" == "CREATE" ]; then
-    select_type # Sets TARGET_DIR and TYPE
-    
-    read -p "Enter folder name (No spaces preferred): " folder_name
-    read -p "Enter number of problems: " num_problems
+
+if [ "$MODE" = "CREATE" ]; then
+
+    select_type
+
+    # Spaces are allowed
+    read -r -p "Enter folder name: " folder_name
+    read -r -p "Enter number of problems: " num_problems
 
     FULL_PATH="$ROOT_DIR/$TARGET_DIR/$folder_name"
-    
+
     if [ -d "$FULL_PATH" ]; then
         echo -e "${RED}Error: Folder already exists! Use 'Open Existing'.${NC}"
         exit 1
     fi
 
     mkdir -p "$FULL_PATH"
-    cd "$FULL_PATH" || exit
+    cd "$FULL_PATH" || exit 1
 
     # Create .cpp files
     for ((i = 0; i < num_problems; i++)); do
+
         letter=$(printf "\\$(printf '%03o' $((65 + i)))")
+
         cat <<EOF > "${letter}.cpp"
 #include <bits/stdc++.h>
 using namespace std;
 
 void solve(){
-    
+
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
+
     int t = 1;
     cin >> t;
-    while(t--) solve();
+
+    while (t--)
+        solve();
+
     return 0;
 }
 EOF
+
     done
 
     # Create helpers
     touch in.txt out.txt
-    
+
     # Create run.sh
     cat <<'EOF' > run.sh
 #!/bin/bash
-if [ $# -ne 1 ]; then echo "Usage: ./run.sh <file>"; exit 1; fi
-g++ -std=c++17 -O2 -Wall "$1.cpp" -o "$1.out" && ./$1.out < in.txt > out.txt
+
+if [ $# -ne 1 ]; then
+    echo "Usage: ./run.sh <file>"
+    exit 1
+fi
+
+g++ -std=c++17 -O2 -Wall "$1.cpp" -o "$1.out" &&
+"./$1.out" < in.txt > out.txt
+
 rm -f "$1.out"
+
 echo "Done."
 EOF
+
     chmod +x run.sh
 
     # Create Notes
     echo "# $folder_name" > notes.md
     echo "Created: $(date)" >> notes.md
 
+    echo -e "${GREEN}✅ Created '$folder_name' in $TARGET_DIR${NC}"
 
-    echo -e "${GREEN}✅ Created $folder_name in $TARGET_DIR${NC}"
-    $EDITOR_CMD .
- 
+    "$EDITOR_CMD" .
+
 
 # ---------------- [2] OPEN EXISTING ----------------
-elif [ "$MODE" == "OPEN" ]; then
+
+elif [ "$MODE" = "OPEN" ]; then
+
     select_type
+
     SEARCH_DIR="$ROOT_DIR/$TARGET_DIR"
-    
-    # Check if empty
-    if [ -z "$(ls -A $SEARCH_DIR)" ]; then
+
+    mkdir -p "$SEARCH_DIR"
+
+    # Read folder names safely, including spaces
+    mapfile -d '' options < <(
+        find "$SEARCH_DIR" \
+            -mindepth 1 \
+            -maxdepth 1 \
+            -type d \
+            -printf '%f\0' |
+        sort -z
+    )
+
+    if [ ${#options[@]} -eq 0 ]; then
         echo -e "${RED}No folders found in $TARGET_DIR${NC}"
         exit 1
     fi
 
     echo -e "${BLUE}Available Folders:${NC}"
-    # List folders and let user select
-    options=($(ls "$SEARCH_DIR"))
+
     select folder_name in "${options[@]}"; do
+
         if [ -n "$folder_name" ]; then
+
             FULL_PATH="$SEARCH_DIR/$folder_name"
-            echo -e "${GREEN}Opening $folder_name...${NC}"
-            
-            # Open in Editor
-            cd "$FULL_PATH"
-            $EDITOR_CMD .
+
+            echo -e "${GREEN}Opening '$folder_name'...${NC}"
+
+            cd "$FULL_PATH" || exit 1
+
+            "$EDITOR_CMD" .
+
             break
+
         else
             echo "Invalid selection."
         fi
+
     done
 
+
 # ---------------- [3] ARCHIVE ----------------
-elif [ "$MODE" == "ARCHIVE" ]; then
+
+elif [ "$MODE" = "ARCHIVE" ]; then
+
     select_type
+
     SEARCH_DIR="$ROOT_DIR/$TARGET_DIR"
     DEST_DIR="$ARCHIVE_DIR/$TARGET_DIR"
 
-    # Check if empty
-    if [ -z "$(ls -A $SEARCH_DIR)" ]; then
+    mkdir -p "$SEARCH_DIR"
+
+    # Read folder names safely, including spaces
+    mapfile -d '' options < <(
+        find "$SEARCH_DIR" \
+            -mindepth 1 \
+            -maxdepth 1 \
+            -type d \
+            -printf '%f\0' |
+        sort -z
+    )
+
+    if [ ${#options[@]} -eq 0 ]; then
         echo -e "${RED}Nothing to archive in $TARGET_DIR${NC}"
         exit 1
     fi
 
-    echo -e "${BLUE}Select folder to ARCHIVE (Move to $DEST_DIR):${NC}"
-    options=($(ls "$SEARCH_DIR"))
+    echo -e "${BLUE}Select folder to ARCHIVE:${NC}"
+
     select folder_name in "${options[@]}"; do
+
         if [ -n "$folder_name" ]; then
+
             SRC_PATH="$SEARCH_DIR/$folder_name"
             FINAL_DEST="$DEST_DIR/$folder_name"
-            
-            # Ensure archive subfolder exists
+
             mkdir -p "$DEST_DIR"
 
-            # Move
+            if [ -e "$FINAL_DEST" ]; then
+                echo -e "${RED}Error: '$folder_name' already exists in archive.${NC}"
+                exit 1
+            fi
+
             mv "$SRC_PATH" "$FINAL_DEST"
-            
-            echo -e "${GREEN}✅ Moved $folder_name to Archive.${NC}"
-           
+
+            echo -e "${GREEN}✅ Moved '$folder_name' to Archive.${NC}"
+
             break
+
         else
             echo "Invalid selection."
         fi
+
     done
+
 fi

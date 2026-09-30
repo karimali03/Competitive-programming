@@ -28,6 +28,15 @@ struct Trie {
             child[cur].cnt++;
         }
     }
+    
+    void rm(int num){
+        int cur = 0;
+        for(int shift = MAX_BITS ; shift >= 0; shift--){
+            int bit = (num>>shift)&1;
+            cur = child[cur].nxt[bit];
+            child[cur].cnt--;
+        }
+    }
    
     int mex(int xor_val){
         int cur = 0;
@@ -71,6 +80,31 @@ struct Trie {
             }
         }
         return ret;
+    }
+    
+    
+    // count (x ^ .. ) < y
+    int calc(int x,int y){
+        int cur = 0;
+        int res = 0;
+        for(int i = MAX_BITS ; i >= 0 && cur != -1; i--){
+            int bx = (x >> i)&1;
+            int by = (y >> i)&1;
+            int n0 = child[cur].nxt[0];
+            int n1 = child[cur].nxt[1];
+            if(bx && by){
+                if(n1 != -1) res += child[n1].cnt;
+                cur = n0;
+            }else if(bx && !by){
+                cur = n1;
+            }else if(!bx && by){
+                if(n0 != -1) res += child[n0].cnt;
+                cur = n1;
+            }else{
+                cur = n0;
+            }
+        }
+        return res;
     }
 
 };

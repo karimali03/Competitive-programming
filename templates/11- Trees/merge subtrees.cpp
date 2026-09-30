@@ -1,156 +1,102 @@
-/*
- * Template: Tree DP with Knapsack Merge (O(N^2))
- * Solves problems requiring selecting a subset of k nodes from a tree
- * where a node's cost/value depends on the parent's state.
- */
+// Tree DP + Knapsack Merge
+// dp[x] = answer using exactly x resources/items/nodes
 
-#include <bits/stdc++.h>
-using namespace std;
+const ll NEG = -(1LL << 60);
 
-typedef long long ll;
+vi sz(n);
 
-const int N = 5005; // Max number of nodes
-const ll INF = 1e18; // Represents infinity
+function<vector<ll>(int,int)> dfs = [&](int u, int p) -> vector<ll> {
 
-int n;              // Number of nodes
-ll budget;          // Max budget (if applicable)
-vector<int> adj[N]; // Adjacency list for the tree
-int sz[N];          // sz[u] = size of the subtree rooted at u
+    vector<ll> dp(k + 1, NEG);
 
-/*
- * DP STATE:
- * dp[u][k][state] = Minimum cost to select 'k' nodes from the subtree
- * rooted at 'u'.
- *
- * 'state' = 0: Node 'u' is NOT selected (or pays its 'base' cost)
- * 'state' = 1: Node 'u' IS selected (and gets a 'discount' / 'special' cost)
- *
- * Adjust the meaning of 'state' based on your problem.
- * You might need more states (e.g., parent not selected, parent selected).
- * The provided solution used a slightly different state, this is one common way.
- */
-ll dp[N][N][2];
-ll temp_dp[N][2]; // Temporary table for the knapsack merge
+    // -------------------------
+    // Base case: node u alone
+    // -------------------------
 
-/* [Problem Specific] Input variables for node costs */
-// Example:
-int cost[N];
-int discount[N];
+    dp[0] = 0;
 
+    // Example if choosing u:
+    // dp[1] = value[u];
 
-void dfs(int u, int p = -1) {
-    // 1. Initialize DP table for the base case (node u alone)
+    int cur = 0;
     sz[u] = 1;
-    for (int i = 0; i <= n; ++i) {
-        dp[u][i][0] = dp[u][i][1] = INF;
-    }
 
-    /* [Problem Specific] Set base cases for node u */
-    // Example:
-    dp[u][0][0] = 0; // Cost of selecting 0 nodes (not selecting u) is 0
-    dp[u][1][0] = cost[u]; // Cost of selecting 1 node (u, at full price)
-    dp[u][1][1] = cost[u] - discount[u]; // Cost of selecting 1 node (u, at discount)
-
-
-    // 2. Recurse for all children
-    for (int v : adj[u]) {
+    for (int v : g[u]) {
         if (v == p) continue;
-        dfs(v, u);
 
-        // 3. Knapsack Merge
-        // Merge results from child 'v' into parent 'u'.
-        // We use a temporary DP table to avoid using half-updated values.
-        for (int i = 0; i <= sz[u] + sz[v]; ++i) {
-            temp_dp[i][0] = temp_dp[i][1] = INF;
-        }
+        auto cdp = dfs(v, u);
 
-        // Iterate over 'i' nodes from u's current state
-        for (int i = 0; i <= sz[u]; ++i) {
-            // Iterate over 'j' nodes from child v's state
-            for (int j = 0; j <= sz[v]; ++j) {
-                
-                /* [Problem Specific] Define merge transitions */
-                
-                // Example Transition 1: u is in state 0 (not selected / full price)
-                // Child 'v' MUST be in state 0 (full price)
-                temp_dp[i + j][0] = min(temp_dp[i + j][0], dp[u][i][0] + dp[v][j][0]);
+        vector<ll> ndp(k + 1, NEG);
 
-                // Example Transition 2: u is in state 1 (selected / discounted)
-                // Child 'v' can be in *either* state.
-                // We take the best (min) cost from v's subtree for j nodes.
-                ll v_best = min(dp[v][j][0], dp[v][j][1]); 
-                temp_dp[i + j][1] = min(temp_dp[i + j][1], dp[u][i][1] + v_best);
+        // a = amount already taken
+        for (int a = 0; a <= cur; a++) {
+
+            if (dp[a] == NEG) continue;
+
+            // b = amount taken from child v
+            for (int b = 0;
+                 b <= min(k - a, sz[v]);
+                 b++) {
+
+                if (cdp[b] == NEG) continue;
+
+                // -------------------------
+                // Knapsack Merge
+                // -------------------------
+
+                ndp[a + b] = max(
+                    ndp[a + b],
+                    dp[a] + cdp[b]
+                );
             }
         }
 
-        // 4. Update subtree size and copy from temp table
+        cur = min(k, cur + sz[v]);
         sz[u] += sz[v];
-        for (int i = 0; i <= sz[u]; ++i) {
-            dp[u][i][0] = temp_dp[i][0];
-            dp[u][i][1] = temp_dp[i][1];
-        }
-    }
-}
 
-void solve() {
-    // 1. Read Input
-    cin >> n >> budget;
-    for (int i = 1; i <= n; ++i) {
-        /* [Problem Specific] Read node costs/discounts */
-        // Example:
-        cin >> cost[i] >> discount[i];
-        if (i > 1) {
-            int parent;
-            cin >> parent;
-            // Assuming 1-based indexing
-            adj[parent].push_back(i);
-            adj[i].push_back(parent); // Or not, if directed tree
-        }
-    }
-    
-    // For the second solution's format (parent is 0-indexed)
-    /*
-    for (int i = 0; i < n; ++i) {
-        cin >> cost[i] >> discount[i];
-        if (i > 0) {
-            int parent;
-            cin >> parent;
-            adj[parent - 1].push_back(i); // Adjust indexing
-        }
-    }
-    */
-
-
-    // 2. Run the DP
-    // Adjust root node as needed (e.g., 0 or 1)
-    dfs(1); // Assuming root is 1
-    // dfs(0); // If root is 0
-
-    // 3. Find the answer
-    int max_nodes = 0;
-    // Iterate from largest k to smallest
-    for (int k = n; k >= 0; --k) {
-        /* [Problem Specific] Check final states at the root */
-        // Example:
-        ll final_cost = min(dp[1][k][0], dp[1][k][1]); // Root is 1
-        
-        if (final_cost <= budget) {
-            max_nodes = k;
-            break;
-        }
+        dp.swap(ndp);
     }
 
-    cout << max_nodes << '\n';
-}
+    return dp;
+};
 
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
+/*
+Sometimes `dp[u][amount]` is not enough because the parent needs extra information about node `u`.
 
-    int t = 1;
-    // cin >> t; // Uncomment for multiple test cases
-    while (t--) {
-        solve();
-    }
-    return 0;
-}
+Then use:  dp[state][amount]
+or conceptually:  dp[u][state][amount]
+
+Where:
+* `amount` = knapsack/resource dimension
+* `state` = information needed to connect subtree `u` with its parent
+
+Examples of `state`:
+
+* whether `u` is selected
+* color/state of `u`
+* number/value assigned to `u`
+* whether an open path ends at `u`
+* connectivity/component information
+
+The merge is still the same idea: old_amount + child_amount = new_amount
+but only combine compatible parent/child states.
+Generic form:
+
+```cpp
+for (state_u)
+    for (amount1)
+        for (state_v)
+            if (compatible(state_u, state_v))
+                for (amount2)
+                    ndp[state_u][amount1 + amount2] =
+                        merge(
+                            dp[state_u][amount1],
+                            cdp[state_v][amount2]
+                        );
+```
+
+Rule of thumb:
+
+> `state` remembers what the parent needs to know.
+> `amount` remembers what is being distributed among children.
+*/

@@ -1,0 +1,79 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+#define ln "\n"
+#define ll long long
+#define ld long double
+#define ull unsigned long long
+#define vec vector
+#define vi vector<int>
+#define vii vector<vector<int>>
+#define viii vector<vector<vector<int>>>
+#define f(i, a, b) for(int i = a; i < b; i++)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
+#define co(x) __builtin_popcountll(x)
+#define ctz(x) __builtin_ctzll(x)
+#define clz(x) __builtin_clzll(x)
+#define PI acos(-1)
+#define int long long
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
+
+template<typename T = int>
+istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v) in >> x;
+    return in;
+}
+
+template<typename T = int>
+ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (const T &x : v) out << x << ' ';
+    return out;
+}
+
+void solve(int test_case) {
+    int n; cin>>n;
+    string s; cin>>s;
+    vi pre(n),suf(n+1);
+    int z = -1;
+    int o = -1;
+    for(int i = 0;i < n ; i++){
+        if(i) pre[i] += pre[i-1];
+        if(s[i] == '1'){
+            if(o == -1) o = i;
+            if(z == -1) pre[i] = 1e15;
+            else pre[i]++;
+        }else z = i;
+    }
+ //   cout<<pre<<ln;
+    for(int i = n-1 ; i >= 0 ; i--){
+        suf[i] += suf[i+1];
+        if(s[i] == '0'){
+            if(o > i) suf[i] = 1e15;
+            else suf[i]++;
+        }
+    }
+  //  cout<<suf<<ln;
+    int mn = 1e15;
+    for(int i = 0;i < n ; i++){
+        mn = min(mn , pre[i] + suf[i+1]);
+        if(i == 0) mn = min(mn , suf[i]);
+    }
+    cout<<mn<<ln;
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int t = 1;
+    cin >> t;
+    for (int i = 1; i <= t; i++) {
+        solve(i);
+    }
+
+    return 0;
+}
