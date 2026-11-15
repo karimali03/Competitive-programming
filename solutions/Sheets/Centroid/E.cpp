@@ -37,7 +37,6 @@ const int N = 200005;
 vector<int> g[N];
 int sz[N];
 bool del[N];
-ll cnt[N]{};
 
 int n,k1,k2;
 ll ans = 0;
@@ -56,33 +55,46 @@ int get_centroid(int u,int p,int tot){
     return u;
 }
  
-int add(int u,int p,int d,int delta){
+void add(int u,int p,int d,vector<int>&cur){
     if(d > k2) return;
-    int c = 1;
-    cnt[d]++;
+    cur.push_back(d);
     for(auto &it : g[u]) if(it != p && !del[it]){
-        c += add(it,u,d+1,delta);
+        add(it,u,d+1,cur);
     }
-    return c;
 }
 
+ll calc(vector<int>&v){
+    int mx = *max_element(all(v));
+    vi frq(mx+1);
+    for(auto &it : v) frq[it]++;
+    vector<ll> pre(mx+1);
+    for(int i=0;i<=mx;i++){
+        pre[i] = frq[i];
+        if(i) pre[i] += pre[i-1];
+    }
+    ll ret = 0;
+    for(int i = 0;i <= mx; i++){
+        int l = max(0,k1-i); int r = min(mx,k2-i);
+        if(l <= r){
+            ret += frq[i] * (pre[r] - (l ? pre[l-1] : 0));
+            if(i >= l && i <= r) ret -= frq[i];
+        }
+    }
+    return ret/2;
+}
 void decompose(int x){
     int size = get_size(x,-1);
     int cent = get_centroid(x,-1,size);
     // calc answer for this centroid
-    cnt[0] = 1;
+    vector<int>d = {0};
     for(auto &it : g[cent]) if(!del[it]){
-        add(it,cent,1,1);
+        vector<int>cur;
+        add(it,cent,1,cur);
+        ans -= calc(cur);
+        for(auto &it : cur) d.push_back(it);
     }
-    for(int i = 1 ; i <= min(size,k2) ; i++){
-        int l = k1 - i - 1;    
-        int r = k2 - i;
-        ans += cnt[r];
-        if(l >= 0) ans -= cnt[l]; 
-        cnt[i] += cnt[i-1];
-    }
+    ans += calc(d);
     // clear datastructure for next centroid
-    memset(cnt,0,sizeof(cnt[0]) * (size+1));
     del[cent] = true;
     // decompose for next centroid
     for(auto &it : g[cent]) if(!del[it]){

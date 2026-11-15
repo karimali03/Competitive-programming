@@ -1,19 +1,77 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void solve(){
+#define ln "\n"
+#define ll long long
+#define ld long double
+#define ull unsigned long long
+#define vec vector
+#define vi vector<int>
+#define vii vector<vector<int>>
+#define viii vector<vector<vector<int>>>
+#define f(i, a, b) for(int i = a; i < b; i++)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
+#define co(x) __builtin_popcountll(x)
+#define ctz(x) __builtin_ctzll(x)
+#define clz(x) __builtin_clzll(x)
+#define PI acos(-1)
+#define int long long
+#define YES cout<<"YES\n"
+#define NO cout<<"NO\n"
+#define NA cout<<"-1\n"
 
+template<typename T = int>
+istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v) in >> x;
+    return in;
 }
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+template<typename T = int>
+ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (const T &x : v) out << x << ' ';
+    return out;
+}
+const int N = 200005;
+const int M = 998244353;
+int fact[N];
+int fp(int x,int y){
+    int ret = 1;
+    while(y>0){
+        if(y&1) ret = ret * x % M;
+        x = x * x % M;
+        y >>=1;
+    }
+    return ret;
+}
+void solve(int test_case) {
+    int n; cin>>n;
+    vi v(n); cin>>v;
+    sort(rall(v));
+    int fa = fact[n-1];
+    int res = 0;
+    int sum = v[0];
+    for(int i = 1;i < n ; i++){
+        int cur = (sum - i * v[i]) % M;
+        cur = cur * fa % M;
+        cur = cur * fp(i,M-2) % M;
+        res = (res + cur) % M;
+        sum += v[i];
+    }
+    cout<<res<<ln;
+}
 
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    fact[0] =1;
+    for(int i=1;i<N;i++) fact[i] = fact[i-1] * i % M;
     int t = 1;
     cin >> t;
-
-    while (t--)
-        solve();
+    for (int i = 1; i <= t; i++) {
+        solve(i);
+    }
 
     return 0;
 }

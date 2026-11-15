@@ -1,93 +1,223 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define ln "\n"
-#define ll long long
-#define ld long double
-#define ull unsigned long long
-#define vec vector
-#define vi vector<int>
-#define vii vector<vector<int>>
-#define viii vector<vector<vector<int>>>
-#define f(i, a, b) for(int i = a; i < b; i++)
-#define all(x) (x).begin(), (x).end()
-#define rall(x) (x).rbegin(), (x).rend()
-#define co(x) __builtin_popcountll(x)
-#define ctz(x) __builtin_ctzll(x)
-#define clz(x) __builtin_clzll(x)
-#define PI acos(-1)
-#define int long long
-#define YES cout<<"YES\n"
-#define NO cout<<"NO\n"
-#define NA cout<<"-1\n"
+// Generic, unweighted matroid intersection.
+//
+// Each matroid must implement:
+//   build(in)          : prepare for the currently chosen set in[e] == true
+//   canAdd(x)          : is I + x independent?
+//   canSwap(y, x)      : is I - y + x independent?
+// Here y is selected, x is unselected, and both matroids use the SAME
+// ground set {0, 1, ..., m-1}.
+//
+// With O(1) oracles, complexity is O(r^2 * m) for max answer size r.
+template<class M1, class M2>
+struct MatroidIntersection {
+    int m;
+    M1 a;
+    M2 b;
 
-template<typename T = int>
-istream &operator>>(istream &in, vector<T> &v) {
-    for (auto &x : v) in >> x;
-    return in;
-}
+    MatroidIntersection(int m, M1 a, M2 b)
+        : m(m), a(move(a)), b(move(b)) {}
 
-template<typename T = int>
-ostream &operator<<(ostream &out, const vector<T> &v) {
-    for (const T &x : v) out << x << ' ';
-    return out;
-}
+    vector<int> solve() {
+        vector<char> in(m, false);
 
-void solve(int test_case) {
-    int n; cin>>n;
-    vector<pair<int,int>>X(n),Y(n);
-    for(int i = 0;i < n ; i++){
-        int x,y; cin>>x>>y;
-        X[i] = {x+y,i};
-        Y[i] = {x-y,i};
+        while (true) {
+            a.build(in);
+            b.build(in);
+
+            vector<int> inside, outside;
+            for (int e = 0; e < m; ++e) {
+                (in[e] ? inside : outside).push_back(e);
+            }
+
+            vector<int> prv(m, -1);
+            queue<int> q;
+
+            // Sources: elements that can be added to M1 directly.
+            for (int x : outside) {
+                if (a.canAdd(x)) {
+                    prv[x] = -2;
+                    q.push(x);
+                }
+            }
+
+            int sink = -1;
+            while (!q.empty()) {
+                int x = q.front();
+                q.pop();
+
+                if (!in[x]) {
+                    // Sinks: elements that can be added to M2 directly.
+                    if (b.canAdd(x)) {
+                        sink = x;
+                        break;
+                    }
+
+                    // Outside -> inside: exchange in M2.
+                    for (int y : inside) {
+                        if (prv[y] == -1 && b.canSwap(y, x)) {
+                            prv[y] = x;
+                            q.push(y);
+                        }
+                    }
+                } else {
+                    // Inside -> outside: exchange in M1.
+                    for (int y : outside) {
+                        if (prv[y] == -1 && a.canSwap(x, y)) {
+                            prv[y] = x;
+                            q.push(y);
+                        }
+                    }
+                }
+            }
+
+            if (sink == -1) break; // Maximum common independent set.
+
+            // Shortest augmenting path: flip membership (+1 net element).
+            for (int x = sink; x != -2; x = prv[x]) in[x] ^= 1;
+        }
+
+        vector<int> answer;
+        for (int e = 0; e < m; ++e) {
+            if (in[e]) answer.push_back(e);
+        }
+        return answer;
     }
-    if(n <= 3){
-        cout<<0<<ln;
-        return;
-    }
+};
 
-    sort(all(X));
-    sort(all(Y));
-    vi ch = {0,1,n-1,n-2,0,1,n-1,n-2};
-    int mn = max(X[n-1].first - X[0].first , Y[n-1].first - Y[0].first);
-    for(int i = 0;i < 8 ; i++){
-        for(int j = 0; j < 8 ; j++){
-            if(i == j) continue;
-            int lx = 0,rx = n-1;
-            int ly = 0,ry = n-1;
-            int idx1 = -1 , idx2 = -1;
-            if(i < 4) idx1 = X[ch[i]].second;
-            else idx1 = Y[ch[i]].second;
-            if(j < 4) idx2 = X[ch[j]].second;
-            else idx2 = Y[ch[j]].second;
-            while(X[lx].second == idx1 || X[lx].second == idx2){
-                lx++;
+// EXAMPLE ORACLE 1: graphic matroid (selected edges must form a forest).
+struct GraphicMatroid {
+    struct DSU {
+        vector<int> p;
+        DSU(int n) : p(n, -1) {}
+        int find(int u) { return p[u] < 0 ? u : p[u] = find(p[u]); }
+        void unite(int u, int v) {
+            u = find(u), v = find(v);
+            if (u == v) return;
+            if (p[u] > p[v]) swap(u, v);
+            p[u] += p[v];
+            p[v] = u;
+        }
+    };
+
+    int n;
+    vector<pair<int, int>> edge; // 0-based endpoints
+    vector<int> comp, tin, tout, child;
+
+    GraphicMatroid(int n, vector<pair<int, int>> edge)
+        : n(n), edge(move(edge)) {}
+
+    void build(const vector<char>& in) {
+        int m = (int)edge.size();
+        DSU dsu(n);
+        vector<vector<pair<int, int>>> tree(n);
+
+        for (int e = 0; e < m; ++e) {
+            if (!in[e]) continue;
+            auto [u, v] = edge[e];
+            dsu.unite(u, v);
+            tree[u].push_back({v, e});
+            tree[v].push_back({u, e});
+        }
+
+        comp.resize(n);
+        for (int u = 0; u < n; ++u) comp[u] = dsu.find(u);
+
+        // Euler tour: selected edge e belongs to path u-v iff
+        // exactly one endpoint is in the subtree of child[e].
+        tin.assign(n, -1);
+        tout.resize(n);
+        child.assign(m, -1);
+        int timer = 0;
+
+        auto dfs = [&](auto&& self, int u, int parent) -> void {
+            tin[u] = timer++;
+            for (auto [v, e] : tree[u]) {
+                if (v == parent) continue;
+                child[e] = v;
+                self(self, v, u);
             }
-            while(X[rx].second == idx1 || X[rx].second == idx2){
-                rx--;
-            }
-            while(Y[ly].second == idx1 || Y[ly].second == idx2){
-                ly++;
-            }
-            while(Y[ry].second == idx1 || Y[ry].second == idx2){
-                ry--;
-            }
-            mn = min(mn , max(X[rx].first-X[lx].first,Y[ry].first-Y[ly].first));
+            tout[u] = timer++;
+        };
+
+        for (int u = 0; u < n; ++u) {
+            if (tin[u] == -1) dfs(dfs, u, -1);
         }
     }
-    cout<<mn<<ln;
-}
 
-signed main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cout.tie(nullptr);
-
-    int t = 1;
-    cin >> t;
-    for (int i = 1; i <= t; i++) {
-        solve(i);
+    bool canAdd(int x) const {
+        auto [u, v] = edge[x];
+        return comp[u] != comp[v];
     }
 
-    return 0;
+    bool inSubtree(int u, int root) const {
+        return tin[root] <= tin[u] && tout[u] <= tout[root];
+    }
+
+    bool canSwap(int y, int x) const {
+        if (canAdd(x)) return true;
+        auto [u, v] = edge[x];
+        int root = child[y]; // y is selected.
+        return inSubtree(u, root) != inSubtree(v, root);
+    }
+};
+
+// EXAMPLE ORACLE 2: partition matroid (at most one element per group).
+struct PartitionMatroid {
+    int groups;
+    vector<int> group; // group[e] in [0, groups)
+    vector<int> owner;
+
+    PartitionMatroid(int groups, vector<int> group)
+        : groups(groups), group(move(group)) {}
+
+    void build(const vector<char>& in) {
+        owner.assign(groups, -1);
+        for (int e = 0; e < (int)group.size(); ++e) {
+            if (in[e]) owner[group[e]] = e;
+        }
+    }
+
+    bool canAdd(int x) const {
+        return owner[group[x]] == -1;
+    }
+
+    bool canSwap(int y, int x) const {
+        return canAdd(x) || owner[group[x]] == y;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin >> n >> m;
+
+    vector<pair<int, int>> endpoints(m);
+    vector<int> colors(m);
+
+    for (int i = 0; i < m; ++i) {
+        int u, v, c;
+        cin >> u >> v >> c;
+        endpoints[i] = {u - 1, v - 1};
+        colors[i] = c - 1;
+    }
+
+    MatroidIntersection mi(
+        m,
+        GraphicMatroid(n, endpoints),
+        PartitionMatroid(n - 1, colors)
+    );
+
+    vector<int> answer = mi.solve();
+    if ((int)answer.size() != n - 1) {
+        cout << -1 << '\n';
+        return 0;
+    }
+
+    for (int e : answer) cout << e + 1 << ' ';
+    cout << '\n';
 }

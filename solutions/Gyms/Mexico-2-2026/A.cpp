@@ -35,18 +35,30 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
 
 void solve(int test_case) {
     int n,m; cin>>n>>m;
-    int a = 0,  b = 0;
-    for(int i  =0;i  < n ; i++){
-        int x; cin>>x;
-        a += x;
-    }  
-     for(int i  =0;i  < m ; i++){
-        int x; cin>>x;
-        b += x;
+    vi v(n); cin>>v;
+    vector<pair<int,int>>rng(m);
+    for(int i = 0; i < m ; i++){
+        cin>>rng[i].first>>rng[i].second;
+        rng[i].first--; rng[i].second--;
+    } 
+    vector<set<int>>st(n);
+    for(int i = 0;i < m ; i++) st[rng[i].first].insert(rng[i].second);
+    vi pre(n+1);
+    auto move = [&](set<int>&A,set<int>&B){
+        if(A.size() > B.size()) swap(A,B);
+        for(auto &it : A) B.insert(it);
+        A.clear();
+    };
+    for(int i = 0;i < m ; i++){
+        while(!st[i].empty() && *st[i].begin() < i) st[i].erase(st[i].begin());
+        if(st[i].empty()) continue;
+        auto it = *st[i].begin(); st[i].erase(st[i].begin());
+        pre[i] ^= 1; pre[it+1] ^= 1;
+        // it+1
+        move(st[i],st[it+1]);
     }
-    a = a + ((a + 9) / 10);
-    if(b >= a) YES;
-    else NO;
+    for(int i = 1;i < n ; i++) pre[i] ^= pre[i-1];
+    cout<<pre<<ln;
 }
 
 signed main() {

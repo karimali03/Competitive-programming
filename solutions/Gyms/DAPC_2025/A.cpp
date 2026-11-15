@@ -33,44 +33,89 @@ ostream &operator<<(ostream &out, const vector<T> &v) {
     return out;
 }
 
-int n,l,h; 
-const int N = 1005;
-int dp[N];   
-int cnt[21][N];
-int rec(int x){
-    if(x == n) return 1e9;
-    int &ret = dp[x];
-    if(~ret) return ret;
-    ret = 1;
-    int d = 0;
-    for(int y = x+1 ; y < n ; y++){
-        int sum = cnt[d][y] - (x ? cnt[d][x-1] : 0);
-        while(d <= 20 && sum < (y-x+1)){
-            d++;
-            sum = cnt[d][y] - (x ? cnt[d][x-1] : 0);
-        }
-        if(d > 20) break;
-        ret = max(ret , min(y-x+1 , rec(y+1)));
-    }
-    return ret;
-}
-void solve(int test_case) {
-    cin>>n>>l>>h;
-    memset(dp,-1,sizeof(dp));
+struct dsu {
+    vector<int> size, par;
+    int cc;
 
-    for(int i = 0;i <  n; i++){
-        int a; cin>>a;
-        for(int d = -10 ; d <= 10;  d++){
-            int cur = d*12 + a;
-            if(cur >= l && cur <= h) cnt[d+10][i] = 1;
+    dsu(int n) :size(n, 1), par(n),cc(n) {
+        for (int i = 0; i < n; i++) par[i] = i;
+    }
+
+    int get(int x) {
+        if (x == par[x]) return x;
+        return par[x] = get(par[x]);
+    }
+
+    bool merge(int x, int y) {
+        x = get(x);
+        y = get(y);
+        if (x == y) return false;
+        if (size[x] > size[y]) swap(x, y);
+        par[x] = y;
+        size[y] += size[x];
+        cc--;
+        return true;
+    }
+
+}; 
+
+
+void solve(int test_case) {
+    int n,m; cin>>n>>m;
+    vector<array<int,3>>g(m);
+    for(int  i =0;i <  m; i++){
+        int x,y,z; cin>>x>>y>>z;
+        g[i] = {z+1 , x-1,y-1};
+    }
+    sort(rall(g));
+    int res = 0;
+    vii ad(n);
+    vi color(n);
+    dsu st(n);
+    bool vld = true;
+    vi cnt(3);
+    function<void(int,int)> dfs = [&](int x,int c){
+        cnt[c] += st.size[x];
+        color[x] = c;
+        for(auto &it : ad[x]){
+            if(color[it] == 0) dfs(it,3-c);
+            else if(color[it] == c) vld = false;
+        } 
+    };
+    for(int i = 0;i < m ;){
+        int t = g[i][0];
+        int org = i;
+        while(i < m && g[i][0] == t){
+            int x = st.get(g[i][1]); int y = st.get(g[i][2]);
+            ad[x].push_back(y);
+            ad[y].push_back(x);
+            i++;
+        }
+        for(int j = org ; j < i ; j++){
+            cnt[1]  = cnt[2] = 0;
+            int x = st.get(g[j][1]); 
+            if(color[x] == 0){
+                dfs(x,1);
+                res += min(cnt[1],cnt[2]);
+            } 
+        }
+        if(!vld){
+            cout<<"impossible\n"; return;
+        }
+        for(int j = org ; j < i ; j++){
+            int x = st.get(g[j][1]); int y = st.get(g[j][2]);
+            color[x] = 0; color[y] = 0;
+            ad[x].clear(); ad[y].clear();
+        }
+        cnt[1] = cnt[2] = 0;
+        for(int j = org ; j < i ; j++){
+            int x = st.get(g[j][1]); int y = st.get(g[j][2]);
+            st.merge(x,y);
         }
     }
-    for(int j = 0 ; j <= 20 ; j++){
-        for(int i = 1;i < n ; i++){
-            cnt[j][i] += cnt[j][i-1];
-        }
-    }
-    cout<<rec(0)<<ln;
+
+    cout<<"possible\n";
+    cout<<res<<"\n";
 }
 
 signed main() {
