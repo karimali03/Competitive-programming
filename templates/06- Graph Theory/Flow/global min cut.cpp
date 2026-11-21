@@ -40,3 +40,12 @@ pair<int, vi> globalMinCut(vii mat) {
 }
 
 
+
+// Directed Global Min Cut: O(V * T_flow)
+// Divide vertices into 2 nonempty groups, minimizing outgoing cut capacity.
+// Fix any vertex r, run maxFlow(r, v) and maxFlow(v, r) for every v != r.
+// Both directions matter because minCut(u, v) != minCut(v, u).
+// Reset the flow graph before each run.
+// Answer = minimum over all 2*(V-1) runs.
+
+
